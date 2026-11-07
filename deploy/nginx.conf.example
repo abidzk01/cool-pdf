@@ -11,7 +11,7 @@
 server {
     listen 80;
     listen [::]:80;
-    server_name rxdiag.my.id www.rxdiag.my.id;
+    server_name pdf.rxdiag.my.id;
 
     root /var/www/rxpdf-cool;
     index index.html;
@@ -23,6 +23,7 @@ server {
         text/css css;
         font/woff2 woff2;
         image/svg+xml svg;
+        application/manifest+json webmanifest;
     }
 
     # Security headers (mirror netlify.toml).
@@ -36,6 +37,19 @@ server {
     location = /index.html {
         add_header Cache-Control "no-cache, must-revalidate" always;
         add_header X-Content-Type-Options "nosniff" always;
+        try_files $uri =404;
+    }
+
+    # PWA: the worker and manifest must not be cached long.
+    location = /sw.js {
+        add_header Cache-Control "no-cache, must-revalidate" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        try_files $uri =404;
+    }
+
+    location = /manifest.webmanifest {
+        add_header Cache-Control "no-cache, must-revalidate" always;
+        add_header Content-Type "application/manifest+json" always;
         try_files $uri =404;
     }
 

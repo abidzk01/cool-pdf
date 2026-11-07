@@ -20,9 +20,9 @@ are normative: if a request conflicts with them, say so before proceeding.
 3. **Respect the split.** CSS goes in the file that owns the concern
    (`theme`, `layout`, `components`, `editor`, `responsive`); JS goes in the
    module that owns it (`i18n-data`, `i18n`, `core`, `split`, `merge`, `tools`,
-   `editor`, `app`).
+   `editor`, `app`, `pwa`).
    `responsive.css` stays last; `i18n-data.js`/`i18n.js` stay first;
-   `app.js` stays last.
+   `app.js` is the last app module and `pwa.js` the final script.
    Classic scripts share one global scope, so every top-level name is declared
    exactly once across all files.
 4. **No new runtime dependency without an issue first.** If one is truly
@@ -234,6 +234,26 @@ are normative: if a request conflicts with them, say so before proceeding.
 - File intake goes through `readPdfFile()`, results through `downloadBytes()`,
   progress through `showProgress`/`setProgress`, and the state lives in
   `S.compressFile`.
+
+### PWA and release rules
+
+- **Never cache user documents.** The service worker caches the app shell,
+  libraries, font, manifest and icons only. PDFs stay in memory/blob URLs.
+- `manifest.webmanifest` must keep: relative `id`/`start_url`/`scope`,
+  `display: standalone`, 192 + 512 icons, a maskable 512, and the four
+  `?tab=` shortcuts. Regenerate icons with `node tools/make-pwa-icons.js` if the
+  brand mark changes.
+- `sw.js` is generated in part: precache list and cache name come from
+  `tools/stamp-assets.js`. Never hand-edit the generated blocks.
+- Serve `sw.js` and `manifest.webmanifest` with `Cache-Control: no-cache`;
+  keep hashed assets immutable. PWA install requires HTTPS (or localhost).
+- Keep the update policy: a waiting worker activates only when the page is idle;
+  otherwise the new version loads on the next visit.
+- **Versioning:** `VERSION` is the single source. For a release, bump it, add a
+  `CHANGELOG.md` entry, run `node tools/stamp-assets.js`, commit, tag
+  `v<version>`, and publish a GitHub release. Use SemVer.
+- Keep the live domain in sync in `sitemap.xml`, `robots.txt`, `llms.txt`, and
+  the canonical/`og:url`/JSON-LD in `index.html` (`https://pdf.rxdiag.my.id/`).
 
 ### If Tailwind is ever introduced (rule for that day)
 

@@ -16,6 +16,8 @@ const LIMITS={
   maxMergeFiles:50,
   maxTextLength:120,
 };
+
+const APP_VERSION = '1.0.0';   // stamped from VERSION by tools/stamp-assets.js
 const PDF_MAGIC='%PDF-';
 
 // Clamp a numeric form value. Never let NaN/out-of-range reach PDF code.

@@ -16,6 +16,8 @@
   .parts-actions{width:100%}
   .support-btn span{display:none}
   .support-btn{padding:7px 10px}
+  .install-btn span{display:none}
+  .install-btn{padding:7px 10px}
   .lang-btn{padding:5px 7px}
   .footer-links{flex-wrap:wrap}
   .editor-toolbar,.editor-topbar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}

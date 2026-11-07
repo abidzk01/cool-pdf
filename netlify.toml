@@ -22,6 +22,19 @@
   [headers.values]
     Cache-Control = "no-cache, must-revalidate"
 
+# The service worker and manifest must revalidate too, otherwise updates stall.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+    Service-Worker-Allowed = "/"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+    Content-Type = "application/manifest+json"
+
 # Every first-party asset is content-hashed in index.html (?v=...), so it can be
 # cached forever. This is what stops a VPS/CDN from serving stale styles.
 [[headers]]

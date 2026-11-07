@@ -1,5 +1,7 @@
 # RxPDF Cool
 
+**Live:** <https://pdf.rxdiag.my.id/> · **Version:** 1.0.0
+
 A free, open-source, **100% client-side PDF toolkit**. Nine PDF tools that run
 entirely in your browser — your files never leave your device. The page opens
 straight on the tools: a compact topbar, one line of copy, then the drop zone.
@@ -21,7 +23,8 @@ straight on the tools: a compact topbar, one line of copy, then the drop zone.
 | 🔒 **Password Protect** | **AES-256** encrypt your PDFs in one click |
 | 🔓 **Unlock PDF** | Remove the password from a PDF you own |
 | 🖊️ **Edit PDF** | Draw a signature with mouse/touch, add text, images, shapes, freehand ink, highlights or cover boxes, rotate/duplicate/insert/delete pages, and edit metadata |
-| 🌐 **Bilingual UI** | English and Indonesian, switchable from the topbar (`EN` / `ID`); no reload and no storage |
+| 🌐 **Bilingual UI** | English and Indonesian, switchable from the topbar (`EN` / `ID`); the choice is saved in `localStorage` and `?lang=` overrides it |
+| 📲 **Installable PWA** | Install from the browser address bar; runs in its own window, gets an app shortcut, and works fully offline after the first visit |
 
 ## Privacy by design
 
@@ -49,6 +52,8 @@ and the brand icons are first-party (`vendor/`, `assets/`). See
 | ZIP | [JSZip](https://stuk.github.io/jszip/) `3.10.1` |
 | Font | [Inter](https://rsms.me/inter/) variable, self-hosted WOFF2 |
 | Brand | `assets/` — square app icon, `favicon.ico`, 32×32 PNG, Apple touch icon |
+| PWA | `manifest.webmanifest`, `sw.js` (precache + offline), `assets/pwa/` icons, install prompt in `js/pwa.js` |
+| SEO | `sitemap.xml`, `robots.txt`, `llms.txt`, canonical/Open Graph/JSON-LD in `index.html` |
 | i18n | `js/i18n-data.js` (English→Indonesian strings) + `js/i18n.js` (`t()`, `data-i18n`, language switch); the choice is saved in `localStorage["rxpdf.lang"]`, `?lang=` still wins |
 | Concurrency | One Blob Worker (from an inline source string) for Split and Merge |
 | Hosting | Any static host; `netlify.toml` ships the security headers (CSP, `X-Frame-Options`, `nosniff`, …) |
@@ -105,13 +110,31 @@ Use **EN / ID** in the topbar to switch language. The choice is saved in
 (<https://teer.id/rxdiag>) and the footer links to
 <https://rxdiag.my.id>.
 
+### Install as an app / use offline
+
+1. Open the site over **HTTPS** in Chrome or Edge.
+2. Click **Install** in the address bar (or the **Install app** button in the
+   topbar). The app opens in its own window and gets an OS shortcut.
+3. After the first visit the service worker has cached the app shell, so every
+   tool keeps working without a connection. Safari/iOS use **Share → Add to Home
+   Screen** (no automatic prompt).
+
+The service worker never caches your PDFs — only the shell, libraries, font and
+icons. See `docs/ARCHITECTURE.md` §5.9 for the caching strategy.
+
 ## Project structure
 
 ```text
 pdf-studio/
-├── index.html                 # Markup shell (~570 lines): head, topbar, hero,
-│                              # tabs, panels, footer, signature modal
-├── netlify.toml               # Static publish root + security headers (CSP)
+├── index.html                 # Markup shell: head, topbar, hero, tabs, panels
+├── manifest.webmanifest       # PWA manifest (name, icons, shortcuts)
+├── sw.js                      # Service worker: precache + offline strategies
+├── VERSION                    # Single source of the release version
+├── CHANGELOG.md               # Release notes per version
+├── sitemap.xml                # SEO sitemap (https://pdf.rxdiag.my.id/)
+├── robots.txt                 # Crawler rules + sitemap reference
+├── llms.txt                   # Project summary for LLMs (llmstxt.org)
+├── netlify.toml               # Static publish root + security/cache headers
 ├── README.md                  # This file
 ├── CONTRIBUTING.md            # How to contribute, code style summary
 ├── SECURITY.md                # Threat model, hardening, known limitations
@@ -124,15 +147,16 @@ pdf-studio/
 │   │   ├── components.css     #   tabs, cards, drop zones, buttons, toasts, forms
 │   │   ├── editor.css         #   overlay editor + signature modal
 │   │   └── responsive.css     #   media queries (must stay last)
+│   ├── pwa/                   # Generated install icons (192/512/maskable/apple)
 │   ├── icon-rxpdf-cool.png    # Square app mark used in the topbar
 │   ├── favicon.ico
 │   ├── favicon-32x32.png
-│   ├── favicon-rxpdf-cool.png # Apple touch icon
+│   ├── favicon-rxpdf-cool.png
 │   └── logo-utama-rxpdf-cool.png # Wide lockup (reference artwork)
 │
 ├── js/                        # Classic scripts, loaded in this order:
 │   ├── i18n-data.js           #   English→Indonesian string map
-│   ├── i18n.js                #   t(), data-i18n, language switch (no storage)
+│   ├── i18n.js                #   t(), data-i18n, language persistence
 │   ├── core.js                #   validation, S state, helpers, theme, tabs,
 │   │                          #   drag & drop, downloads, progress, worker
 │   ├── split.js               #   Split
@@ -140,7 +164,8 @@ pdf-studio/
 │   ├── tools.js               #   Compress, Images, Watermark, Page Numbers,
 │   │                          #   Protect, Unlock
 │   ├── editor.js              #   Edit + signature pad
-│   └── app.js                 #   init, global listeners
+│   ├── app.js                 #   init, global listeners, deep links
+│   └── pwa.js                 #   service worker + install prompt + offline badge
 │
 ├── vendor/                    # First-party runtime dependencies (no CDN)
 │   ├── README.md              # Versions, sources, licenses, checksums
@@ -152,7 +177,8 @@ pdf-studio/
 ├── tools/
 │   ├── serve.py               # Local dev server with correct MIME types
 │   ├── check-i18n.js          # i18n coverage check
-│   └── stamp-assets.js        # Adds ?v=<hash> cache busters to index.html
+│   ├── stamp-assets.js        # Hashes, SW precache, version stamping
+│   └── make-pwa-icons.js      # Generates assets/pwa/* from the brand mark
 │
 ├── deploy/
 │   ├── README.md              # VPS cache/deploy checklist
@@ -233,6 +259,51 @@ Why does the Compress tool not shrink my scanned PDF?
 - Verify with `python tools/serve.py` and the manual matrix in
   `docs/ARCHITECTURE.md` §11; run `node tools/check-i18n.js` and
   `node tools/stamp-assets.js` after text/CSS/JS changes.
+
+## Versioning and releases
+
+The version lives in **`VERSION`** (currently `1.0.0`) and is the single source
+of truth. `node tools/stamp-assets.js` stamps it into:
+
+- `js/core.js` (`APP_VERSION`, shown in the footer),
+- `manifest.webmanifest` (`"version"`),
+- `sw.js` (cache name `rxpdf-cool-<version>-<content hash>`),
+- every CSS/JS link in `index.html` (`?v=<content hash>`).
+
+Release checklist:
+
+```bash
+# 1. bump VERSION + add a CHANGELOG entry
+# 2. regenerate hashes, precache and version stamps
+node tools/stamp-assets.js
+node tools/check-i18n.js
+node tools/stamp-assets.js --check
+
+# 3. commit and tag
+git add -A
+git commit -m "Release: v1.0.0"
+git tag -a v1.0.0 -m "RxPDF Cool 1.0.0"
+git push origin master --tags
+
+# 4. publish the GitHub release
+gh release create v1.0.0 --title "RxPDF Cool 1.0.0" --notes-file CHANGELOG.md
+```
+
+The project uses [Semantic Versioning](https://semver.org/): MAJOR for breaking
+behaviour, MINOR for new tools/features, PATCH for fixes. `CHANGELOG.md` follows
+Keep a Changelog.
+
+## SEO
+
+- **`sitemap.xml`** — the single canonical URL
+  (`https://pdf.rxdiag.my.id/`), `changefreq` and `priority`.
+- **`robots.txt`** — allows everything and points at the sitemap.
+- **`llms.txt`** — a concise, structured summary for LLM crawlers
+  ([llmstxt.org](https://llmstxt.org/)) with tool links, docs and citable facts.
+- **`index.html`** — canonical, Open Graph/Twitter, `theme-color`, and
+  `WebApplication` JSON-LD (name, URL, features, free offer).
+- If you host the app on another domain, update the URL in `sitemap.xml`,
+  `robots.txt`, `llms.txt`, and the canonical/`og:url`/JSON-LD in `index.html`.
 
 ## Deploy
 

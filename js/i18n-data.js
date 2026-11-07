@@ -18,6 +18,17 @@ const I18N_ID = {
   'Nothing is uploaded — every file is processed in this tab': 'Tidak ada yang diunggah — setiap file diproses di tab ini',
   'Support': 'Dukung',
   'Support this project': 'Dukung proyek ini',
+  // PWA
+  'Install app': 'Pasang aplikasi',
+  'Install RxPDF Cool as an app': 'Pasang RxPDF Cool sebagai aplikasi',
+  'Offline — every tool still works': 'Offline — semua alat tetap berfungsi',
+  'Offline-ready': 'Siap offline',
+  'Use your browser menu → "Install app" (or "Add to Home Screen" on iOS).':
+    'Gunakan menu browser → "Instal aplikasi" (atau "Tambahkan ke Layar Utama" di iOS).',
+  'RxPDF Cool installed — open it from your app menu.':
+    'RxPDF Cool terpasang — buka dari menu aplikasi Anda.',
+  'A new version is ready — it will load on your next visit.':
+    'Versi baru sudah siap — akan dimuat pada kunjungan berikutnya.',
   'Light theme': 'Tema terang',
   'Dark theme': 'Tema gelap',
   'Colour theme': 'Tema warna',

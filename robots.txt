@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Change this URL if the app is hosted on another domain.
+Sitemap: https://pdf.rxdiag.my.id/sitemap.xml

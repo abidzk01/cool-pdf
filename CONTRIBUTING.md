@@ -105,6 +105,20 @@ Probably **not** a fit (open an issue to discuss first):
 - Telemetry, analytics, or tracking of any kind
 - A build step
 
+## Release process
+
+This project uses SemVer. `VERSION` is the single source of truth.
+
+1. Bump `VERSION` and add a `CHANGELOG.md` entry.
+2. Run `node tools/stamp-assets.js` (hashes, PWA precache, version stamps) and
+   `node tools/check-i18n.js`; both must pass, along with
+   `node tools/stamp-assets.js --check`.
+3. Test installability and offline mode (DevTools → Application → Manifest and
+   Service Workers, then reload with the network off).
+4. Commit, tag `v<version>`, push with `--tags`, and publish the GitHub release.
+
+See `README.md` → "Versioning and releases" for the exact commands.
+
 ## Reporting security issues
 
 If you find a security vulnerability, **please do not open a public issue.** See [SECURITY.md](SECURITY.md) for the disclosure process.

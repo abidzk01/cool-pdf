@@ -46,9 +46,16 @@ the security headers (CSP, `X-Frame-Options`, `nosniff`, `Referrer-Policy`,
 
 ```text
 pdf-studio/
-├── index.html                 # Markup shell only (~570 lines): head, topbar, hero,
-│                              # tabs, panels, footer, modal; links CSS and JS
-├── netlify.toml               # Static publish config + security headers (CSP)
+├── index.html                 # Markup shell only: head, topbar, hero, tabs,
+│                              # panels, footer, modal; links CSS and JS
+├── manifest.webmanifest       # PWA manifest: name, icons, shortcuts, standalone
+├── sw.js                      # Service worker: precache + offline strategies
+├── VERSION                    # Single source of the release version
+├── CHANGELOG.md               # Keep a Changelog release notes
+├── sitemap.xml                # SEO sitemap
+├── robots.txt                 # Crawler rules + sitemap reference
+├── llms.txt                   # Structured project summary for LLMs
+├── netlify.toml               # Static publish config + security/cache headers
 ├── README.md                  # Entry point: stack, requirements, conventions
 ├── CONTRIBUTING.md            # Contribution workflow + code style summary
 ├── SECURITY.md                # Threat model, hardening, known limitations
@@ -64,6 +71,7 @@ pdf-studio/
 │   │   ├── editor.css         #   overlay editor, toolbar, handles, signature modal
 │   │   └── responsive.css     #   media queries (must stay last)
 │   ├── icon-rxpdf-cool.png    # Square app mark used in the topbar
+│   ├── pwa/                   # Generated PWA icons (192, 512, maskable, apple)
 │   ├── favicon.ico            # Browser tab icon
 │   ├── favicon-32x32.png      # PNG favicon
 │   ├── favicon-rxpdf-cool.png # Apple touch icon
@@ -79,7 +87,8 @@ pdf-studio/
 │   ├── tools.js               #   Compress, Images, Watermark, Page Numbers,
 │   │                          #   Protect, Unlock
 │   ├── editor.js              #   Edit tool + signature pad (largest module)
-│   └── app.js                 #   init, global listeners, keyboard shortcuts
+│   ├── app.js                 #   init, global listeners, deep links, version
+│   └── pwa.js                 #   SW registration, install prompt, offline badge
 │
 ├── vendor/                    # First-party vendored runtime dependencies
 │   ├── README.md              # Versions, sources, licenses, SHA-256/SHA-384
@@ -96,7 +105,8 @@ pdf-studio/
 ├── tools/
 │   ├── serve.py               # Local dev server with correct MIME types
 │   ├── check-i18n.js          # Fails on missing i18n keys / unwrapped toasts
-│   └── stamp-assets.js        # Adds ?v=<sha256> cache busters to index.html
+│   ├── stamp-assets.js        # Hashes, SW precache and version stamping
+│   └── make-pwa-icons.js      # Generates assets/pwa/* from the brand mark
 │
 ├── deploy/
 │   ├── README.md              # Cache/deploy checklist
@@ -166,15 +176,17 @@ All scripts are **classic scripts**, not ES modules, so they share one global
 scope and run in this order:
 
 ```text
-i18n-data.js → i18n.js → core.js → split.js → merge.js → tools.js → editor.js → app.js
+i18n-data.js → i18n.js → core.js → split.js → merge.js → tools.js → editor.js → app.js → pwa.js
 ```
 
 - `i18n-data.js` and `i18n.js` must stay first: `t()` is used by validation and
   every tool message.
 - `core.js` declares `S`, `G`, `esc`, `LIMITS`, the validation helpers, progress,
   downloads and the Blob worker.
-- `app.js` must stay last: it runs `setTheme`, `onSplitModeChange`, installs the
-  editor listeners and the keyboard shortcuts.
+- `app.js` runs `setTheme`, `onSplitModeChange`, installs the editor listeners,
+  applies the deep link and sets the footer version.
+- `pwa.js` stays last: it registers the service worker and wires the install
+  prompt after the app is initialised.
 - Every other file only defines functions or constants; it does not call code
   from a file loaded after it. Anything may call anything at runtime.
 - Top-level `const`/`let` are shared through the global lexical environment; a
@@ -221,6 +233,8 @@ theme.css → layout.css → components.css → editor.css → responsive.css
 | Shared UI (cards, tabs, drop zones, buttons, toasts, forms) | `assets/css/components.css` |
 | Editor and signature pad UI | `assets/css/editor.css` |
 | i18n strings, language detection/switch, meta titles | `js/i18n-data.js` / `js/i18n.js` |
+| PWA manifest, icons, service worker, install UI | `manifest.webmanifest`, `tools/make-pwa-icons.js`, `sw.js`, `js/pwa.js` |
+| SEO files (sitemap, robots, llms) | `sitemap.xml`, `robots.txt`, `llms.txt` |
 | State, validation, a shared helper, theme/tabs/downloads | `js/core.js` |
 | Split | `js/split.js` |
 | Merge | `js/merge.js` |
@@ -367,6 +381,42 @@ The UI is bilingual without a framework or build step:
   keeps `aria-pressed` on `#langEn` / `#langId`.
 - Library error messages arrive in English; the app prefixes them with a
   localized sentence (`t('Failed to …') + err.message`).
+
+### 5.9 PWA and offline (service worker)
+
+The app is installable and fully offline after the first visit. Everything is
+first-party, so the worker never needs a third-party origin.
+
+**Manifest** (`manifest.webmanifest`) — relative `id`/`start_url`/`scope` (`./`)
+so subdirectory hosting works; `display: standalone`; 192/512 icons plus a
+maskable 512; four `shortcuts` (`?tab=split|merge|compress|edit`). Icons are
+generated from `assets/icon-rxpdf-cool.png` by `tools/make-pwa-icons.js`.
+
+**Worker** (`sw.js`) — strategies by request type:
+
+| Request | Strategy |
+| --- | --- |
+| navigation (`index.html`, `?tab=…`) | network-first, fall back to the cached shell |
+| first-party assets with `?v=` | cache-first (content hash makes them immutable) |
+| everything else same-origin (font, icons, manifest, vendor) | stale-while-revalidate |
+| any other origin / non-GET | not intercepted |
+
+- The precache list and cache name are **generated** by
+  `tools/stamp-assets.js`: `rxpdf-cool-<VERSION>-<hash of every precached
+  file>`. A release or any asset change therefore rolls the cache; `activate`
+  deletes older `rxpdf-cool-*` caches.
+- Precache covers 29 entries (about 3 MB): the shell, manifest, all CSS/JS
+  (hashed), the three vendored libraries, the pdf.js worker, the Inter font and
+  icons. PDFs never enter the cache — they stay in memory/blob URLs.
+- Update policy: a new worker waits. `pwa.js` activates it and reloads only when
+  the page is idle and an older worker was in control; otherwise it shows "a new
+  version is ready" and the update applies on the next visit. This avoids
+  interrupting an edit or a running compression.
+- `pwa.js` also handles `beforeinstallprompt` (topbar Install button),
+  `appinstalled`, and the footer offline badge; `?tab=` is applied by `app.js`.
+- **HTTPS is required** (or `localhost`) for installation and service workers.
+  See `deploy/` for the nginx/Apache headers (`sw.js` and the manifest must
+  revalidate; hashed assets stay immutable).
 
 ---
 
@@ -582,6 +632,10 @@ suggests Small or a lower target.
 - **First-party runtime**: all scripts, styles and the font are served from
   `assets/`, `js/` and `vendor/`. The CSP has no third-party origin;
   `default-src 'self'`.
+- **Service worker limits**: same-origin GET requests only; it caches the app
+  shell, libraries, font and icons — never PDFs or their names — and stores no
+  user data. The only persistent keys are the cache name and
+  `localStorage['rxpdf.lang']`.
 - **No storage of user documents.** The only persisted value is the UI
   language (`localStorage['rxpdf.lang']`); no PDF bytes, names, passwords,
   cookies or analytics are stored. Nothing else survives a reload.
@@ -645,6 +699,9 @@ Practical guidance: prefer the Split tool's "one archive" modes over
 | 16 | Editor text | Standard PDF fonts (WinAnsi/Latin) only; signatures are raster PNGs, so they are not vector or searchable | Acceptable for signing, not for non-Latin documents |
 | 17 | Editor performance | Page-by-page pdf.js rendering plus a full copy/flatten on save; a 300 MB file is warned about but still allowed | Large documents are slow and memory-hungry |
 | 18 | i18n | Keys are the English strings, so changing English copy without updating `js/i18n-data.js` silently falls back to English. `node tools/check-i18n.js` catches it, but is not wired into CI | Add the check to CI when one exists |
+| 19 | PWA | Installability requires HTTPS. The first visit precaches ~3 MB (pdf.worker 1.1 MB + pdf-lib 617 KB + font 352 KB), and a new worker waits until the page is idle | Acceptable; can move to lazy vendor caching if bandwidth matters |
+| 20 | PWA on iOS | Safari has no `beforeinstallprompt`; users must use Share → Add to Home Screen and storage limits are stricter | Documented in README |
+| 21 | SEO | The app is a single page, so the sitemap has one URL; tool deep links are query parameters and are not indexed separately | Fine for a utility app; add real routes only if the architecture changes |
 
 ---
 
@@ -701,8 +758,14 @@ Practical guidance: prefer the Split tool's "one archive" modes over
 | Editor save | Output opens in a viewer; cover is opaque; rejects encrypted input until unlocked |
 | Validation | `.txt` renamed to `.pdf`, empty file, truncated PDF, >1.5 GB file, encrypted file in each tool |
 | Theme | Light/dark toggle swaps the palette and keeps the two theme buttons in sync |
-| Language | `EN`/`ID` switches title, meta, hero, tabs, panels, buttons, tooltips, footer and dynamic labels; `?lang=id` on load; `<html lang>` updates; no storage used |
+| Language | `EN`/`ID` switches title, meta, hero, tabs, panels, buttons, tooltips, footer and dynamic labels; `?lang=id` on load; `<html lang>` updates; the choice is saved in `localStorage` |
 | Links | Support button opens <https://teer.id/rxdiag> in a new tab (`rel="noopener noreferrer"`); footer opens <https://rxdiag.my.id> |
+| PWA — manifest | Manifest returns 200 with `application/manifest+json`, three icons resolve, four shortcuts present, `display: standalone` |
+| PWA — install | `beforeinstallprompt` shows the topbar button; clicking calls `prompt()`; `appinstalled` hides it and confirms |
+| PWA — offline | After one online visit, switch the network off, reload: shell, CSS, font and all three libraries load; a compress run still downloads a valid PDF; 0 console errors |
+| PWA — update | Changing an asset changes `?v=`, the cache name and the precache list; `activate` deletes the old cache |
+| Deep link | `?tab=compress` (and the other tabs) opens the right panel on load |
+| SEO | `sitemap.xml`, `robots.txt` and `llms.txt` return 200; canonical/`og:url`/JSON-LD use the live domain |
 | Concurrency | Buttons disable during a run and re-enable after (success and failure) |
 
 ---

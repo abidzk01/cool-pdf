@@ -45,6 +45,14 @@
   transition:filter .2s, transform .2s;
 }
 .support-btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.install-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 13px;border-radius:980px;border:none;
+  font-size:.75rem;font-weight:700;color:#fff;cursor:pointer;white-space:nowrap;
+  background:linear-gradient(135deg,#0071e3,#22d3ee);
+  transition:filter .2s, transform .2s;
+}
+.install-btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
 .lang-group{
   display:flex;gap:2px;padding:3px;border-radius:980px;
   background:var(--hover);border:1px solid var(--border-s);

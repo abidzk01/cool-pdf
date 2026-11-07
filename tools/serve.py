@@ -38,6 +38,8 @@ _MIME = {
     ".woff2": "font/woff2",
     ".ttf": "font/ttf",
     ".pdf": "application/pdf",
+    ".webmanifest": "application/manifest+json",
+    ".xml": "application/xml; charset=utf-8",
     ".txt": "text/plain; charset=utf-8",
     ".md": "text/markdown; charset=utf-8",
     ".toml": "text/plain; charset=utf-8",

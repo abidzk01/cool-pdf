@@ -9,7 +9,12 @@
 <meta name="theme-color" content="#0b1220">
 <link rel="icon" href="assets/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
-<link rel="apple-touch-icon" href="assets/favicon-rxpdf-cool.png">
+<link rel="apple-touch-icon" href="assets/pwa/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RxPDF Cool">
 <meta property="og:title" content="RxPDF Cool — The PDF toolkit built for speed">
 <meta property="og:description" content="Nine PDF tools that run entirely in your browser. Split, merge, compress, convert, watermark, number, sign, edit, protect and unlock. Zero uploads, zero servers, zero limits.">
 <meta property="og:type" content="website">
@@ -18,12 +23,15 @@
 <meta name="twitter:title" content="RxPDF Cool — The PDF toolkit built for speed">
 <meta name="twitter:description" content="Split, merge, compress, sign, edit and protect PDFs in your browser. No uploads, no servers, no limits. Up to 1.5 GB per file.">
 <meta name="robots" content="index, follow">
+<link rel="canonical" href="https://pdf.rxdiag.my.id/">
+<meta property="og:url" content="https://pdf.rxdiag.my.id/">
 <link rel="preload" href="vendor/inter/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
   "name": "RxPDF Cool",
+  "url": "https://pdf.rxdiag.my.id/",
   "description": "Free, fully client-side PDF toolkit. Split, merge, compress, convert to images, watermark, add page numbers, sign, edit, password-protect with AES-256 and unlock PDFs up to 1.5 GB and 3,000 pages, entirely in the browser.",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
@@ -37,10 +45,10 @@
 <script src="vendor/pdf-lib/pdf-lib.min.js"></script>
 <script src="vendor/jszip/jszip.min.js"></script>
 <link rel="stylesheet" href="assets/css/theme.css?v=2a538e84">
-<link rel="stylesheet" href="assets/css/layout.css?v=ab97a1b0">
-<link rel="stylesheet" href="assets/css/components.css?v=325ab235">
+<link rel="stylesheet" href="assets/css/layout.css?v=2772c8f6">
+<link rel="stylesheet" href="assets/css/components.css?v=dbc60f0a">
 <link rel="stylesheet" href="assets/css/editor.css?v=111a5759">
-<link rel="stylesheet" href="assets/css/responsive.css?v=9e27b835">
+<link rel="stylesheet" href="assets/css/responsive.css?v=f8612051">
 
 </head>
 <body>
@@ -53,6 +61,7 @@
     <span class="brand-text">Rx<span class="brand-accent">PDF</span> Cool</span>
   </a>
   <div class="topbar-actions">
+    <button class="install-btn" id="pwa-install" type="button" onclick="promptPwaInstall()" style="display:none" data-i18n-title="Install RxPDF Cool as an app" title="Install RxPDF Cool as an app">⬇️ <span data-i18n="Install app">Install app</span></button>
     <a class="support-btn" href="https://teer.id/rxdiag" target="_blank" rel="noopener noreferrer" title="Support this project" data-i18n-title="Support this project">❤️ <span data-i18n="Support">Support</span></a>
     <span class="privacy-badge" data-i18n="🔒 100% private · files never leave your device" data-i18n-title="Nothing is uploaded — every file is processed in this tab" title="Nothing is uploaded — every file is processed in this tab">🔒 100% private · files never leave your device</span>
     <div class="theme-group" role="group" aria-label="Colour theme" data-i18n-aria="Colour theme">
@@ -604,20 +613,24 @@
     <a href="https://rxdiag.my.id" target="_blank" rel="noopener noreferrer" title="rxdiag.my.id">rxdiag.my.id</a>
     <span class="footer-dot">·</span>
     <a href="https://teer.id/rxdiag" target="_blank" rel="noopener noreferrer">❤️ <span data-i18n="Support">Support</span></a>
+    <span class="footer-dot">·</span>
+    <span class="footer-version" id="app-version">v1.0.0</span>
   </div>
+  <div class="pwa-status" id="pwa-status" hidden></div>
 </footer>
 </div><!-- /#app -->
 
 <div id="toast-container"></div>
 
-<script src="js/i18n-data.js?v=3564bc27"></script>
+<script src="js/i18n-data.js?v=a3c0cf29"></script>
 <script src="js/i18n.js?v=d93ecf38"></script>
-<script src="js/core.js?v=c183d64a"></script>
+<script src="js/core.js?v=cdffd23a"></script>
 <script src="js/split.js?v=4cb5bd08"></script>
 <script src="js/merge.js?v=45de4f08"></script>
 <script src="js/tools.js?v=7c1e4926"></script>
 <script src="js/editor.js?v=f79a7fd6"></script>
-<script src="js/app.js?v=5f21a04f"></script>
+<script src="js/app.js?v=9741884c"></script>
+<script src="js/pwa.js?v=4fe4f89e"></script>
 
 </body>
 </html>

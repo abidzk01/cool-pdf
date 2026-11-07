@@ -29,6 +29,25 @@ Copy this into the PR description and tick what you verified.
 - [ ] Edit: signature draws with mouse/touch, objects move/resize, undo/redo
       works, page ops and metadata survive a save, and the output reopens.
 
+## PWA / offline
+
+- [ ] `manifest.webmanifest` returns 200 with `application/manifest+json` and
+      the 192/512/maskable icons resolve.
+- [ ] Service worker registers, precache count matches, and the cache name
+      contains the current `VERSION`.
+- [ ] Install button appears on `beforeinstallprompt` and calls `prompt()`.
+- [ ] Offline: reload with the network off; shell, CSS, font and libraries load
+      and a tool still produces a valid file.
+- [ ] Updating an asset rolls `?v=`, the precache list and the cache name.
+- [ ] `node tools/stamp-assets.js --check` passes.
+
+## Release
+
+- [ ] `VERSION` bumped and `CHANGELOG.md` updated.
+- [ ] `node tools/stamp-assets.js` and `node tools/check-i18n.js` pass.
+- [ ] `sitemap.xml`, `robots.txt`, `llms.txt` and canonical use the live domain.
+- [ ] Commit, tag `v<version>`, push tags, publish the GitHub release.
+
 ## Compress
 
 - [ ] Lossless keeps text selectable and reports "no size reduction" honestly.

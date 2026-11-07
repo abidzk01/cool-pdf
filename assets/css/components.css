@@ -268,4 +268,11 @@ footer strong{color:var(--text-m)}
 .footer-links a{color:var(--accent);text-decoration:none;font-weight:600}
 .footer-links a:hover{text-decoration:underline}
 .footer-dot{color:var(--text-x)}
+.footer-version{color:var(--text-x);font-variant-numeric:tabular-nums}
+.pwa-status{
+  display:inline-flex;align-items:center;gap:5px;margin-top:8px;
+  padding:3px 10px;border-radius:980px;font-size:.7rem;font-weight:600;
+  color:var(--text-m);background:var(--hover);border:1px solid var(--border-s);
+}
+.pwa-status[data-state="offline"]{color:#b45309;border-color:currentColor}
 .hint{font-size:.72rem;color:var(--text-m);margin-top:8px;line-height:1.5}

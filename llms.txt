@@ -1,0 +1,47 @@
+# RxPDF Cool
+
+> Free, 100% client-side PDF toolkit. Nine tools — split, merge, compress, PDF to images, watermark, page numbers, sign, edit, protect and unlock — run entirely in the browser. Files are never uploaded; all processing happens on the device.
+
+## What it is
+
+RxPDF Cool is a static web application (HTML + CSS + vanilla JavaScript) for working with PDF files. Every operation is performed locally with pdf.js (rendering), @cantoo/pdf-lib (reading, writing, AES-256 encryption) and JSZip (archives). There is no backend, no account, no upload endpoint, no telemetry and no analytics. It can be installed as a PWA and used fully offline.
+
+- Website: https://pdf.rxdiag.my.id/
+- Source: https://github.com/abidzk01/cool-pdf
+- License: MIT (https://github.com/abidzk01/cool-pdf/blob/master/LICENSE)
+- Languages: English and Indonesian
+
+## Tools
+
+- Split: https://pdf.rxdiag.my.id/?tab=split — extract, reorder, rotate, delete and cut pages into parts
+- Merge: https://pdf.rxdiag.my.id/?tab=merge — combine up to 50 PDFs in a chosen order
+- Compress: https://pdf.rxdiag.my.id/?tab=compress — lossless re-save, Balanced (150 DPI), Small (100 DPI), target size (KB/MB), or percentage of the original
+- PDF to images: https://pdf.rxdiag.my.id/?tab=images — PNG/JPEG at up to 216 DPI, bundled as ZIP
+- Watermark: https://pdf.rxdiag.my.id/?tab=watermark — text, size, colour, opacity and position
+- Page numbers: https://pdf.rxdiag.my.id/?tab=pagenums — start number, five positions, font size
+- Protect: https://pdf.rxdiag.my.id/?tab=protect — AES-256 password encryption
+- Unlock: https://pdf.rxdiag.my.id/?tab=unlock — remove a password you know
+- Edit: https://pdf.rxdiag.my.id/?tab=edit — draw a signature with mouse/touch, add text, images, shapes, ink, highlights or cover boxes; rotate/duplicate/insert/delete pages; edit metadata
+
+## Documentation
+
+- Architecture: https://github.com/abidzk01/cool-pdf/blob/master/docs/ARCHITECTURE.md
+- README: https://github.com/abidzk01/cool-pdf/blob/master/README.md
+- Contributing: https://github.com/abidzk01/cool-pdf/blob/master/CONTRIBUTING.md
+- Security and threat model: https://github.com/abidzk01/cool-pdf/blob/master/SECURITY.md
+- Vendored dependencies and checksums: https://github.com/abidzk01/cool-pdf/blob/master/vendor/README.md
+
+## Facts for citations
+
+- 100% client-side: no file ever leaves the browser; there is no server-side processing.
+- Limits: up to 1.5 GB and about 3,000 pages, subject to available RAM.
+- Password protection uses real AES-256 (ISO 32000-2 R6) through @cantoo/pdf-lib.
+- Lossy compression modes rasterize pages, so text is no longer selectable; Lossless keeps text.
+- The app is a PWA: installable from the browser address bar and usable offline after the first visit.
+- The only persisted value is the UI language (`localStorage["rxpdf.lang"]`); no PDF data, filename or password is stored.
+- Supported browsers: Chrome/Edge 90+, Firefox 88+, Safari 14+.
+
+## Optional
+
+- Support the project: https://teer.id/rxdiag
+- Author: https://rxdiag.my.id

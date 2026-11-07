@@ -34,6 +34,7 @@ function refreshDynamicTranslations(){
   }
   if(S.compressFile)updateCompressPreview();
   if(S.mergeFiles&&S.mergeFiles.length)renderMergeList();
+  if(typeof refreshPwaLabels==='function')refreshPwaLabels();
   if(S.edit){
     G('edit-page-label').textContent=(S.edit.page+1)+' / '+S.edit.plan.length;
     renderEditProps();
@@ -45,3 +46,13 @@ function refreshDynamicTranslations(){
 }
 
 initLang();
+
+// Footer version (single source: VERSION, stamped into core.js).
+const versionEl = G('app-version');
+if (versionEl) versionEl.textContent = 'v' + APP_VERSION;
+
+// Deep link for PWA shortcuts: ?tab=split|merge|compress|...|edit
+try {
+  const initialTab = new URLSearchParams(location.search).get('tab');
+  if (initialTab && G('panel-' + initialTab)) switchTab(initialTab);
+} catch (e) { /* ignore malformed URLs */ }

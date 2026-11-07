@@ -8,11 +8,17 @@
   AddType text/css .css
   AddType font/woff2 .woff2
   AddType image/svg+xml .svg
+  AddType application/manifest+json .webmanifest
 </IfModule>
 
 <IfModule mod_headers.c>
   # The shell must revalidate so new hashed asset URLs are picked up.
   <FilesMatch "^index\.html$">
+    Header always set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+
+  # PWA worker/manifest must revalidate as well.
+  <FilesMatch "^(sw\.js|manifest\.webmanifest)$">
     Header always set Cache-Control "no-cache, must-revalidate"
   </FilesMatch>
 
