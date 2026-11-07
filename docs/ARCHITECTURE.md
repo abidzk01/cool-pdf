@@ -11,9 +11,9 @@
 ## 1. What this project is
 
 RxPDF Cool is a **single-page, 100% client-side PDF toolkit**. It
-ships eight tools — Split, Merge, Compress, PDF→Images, Watermark, Page
-Numbers, Password Protect, Unlock — and every byte of processing happens in the
-user's browser tab. There is:
+ships nine tools — Split, Merge, Compress, PDF→Images, Watermark, Page
+Numbers, Password Protect, Unlock and Edit (overlay editor + signature pad) —
+and every byte of processing happens in the user's browser tab. There is:
 
 - **no backend**, no API, no database, no upload endpoint;
 - **no build step** — no npm, no bundler, no `node_modules`;
@@ -123,14 +123,14 @@ same origin. There is no third-party origin in the CSP.
 
 ## 4. `index.html` anatomy
 
-`index.html` is ~1,835 lines, split into four contiguous zones:
+`index.html` is ~3,200 lines, split into four contiguous zones:
 
 | Zone | Approx. lines | Contents |
 | --- | --- | --- |
 | Head | 1–38 | Title, description/keywords, Open Graph, Twitter, favicons, `theme-color`, `robots`, JSON-LD `WebApplication`, local `<script src>` for the three libraries, font preload |
-| Styles | 39–432 | One `<style>` block: `@font-face` for self-hosted Inter, theme custom properties, reset, topbar/brand, compact hero, tool UI (`card`, `drop-zone`, `page-thumb`, `toast`, forms), responsive rules |
-| Markup | 434–801 | `.topbar` (brand image + wordmark, privacy badge, theme group), `.hero` (h1 + paragraph + fact chips), `.tabs`, `#panel-<name>` × 8, footer, `#toast-container` |
-| Application JS | 803–1832 | `'use strict'` script: local asset URLs, `esc`, validation layer, state, helpers, theme/tabs, drag & drop, downloads, one section per tool, worker source, init |
+| Styles | 39–547 | One `<style>` block: `@font-face` for self-hosted Inter, theme custom properties, reset, topbar/brand, compact hero, tool UI (`card`, `drop-zone`, `page-thumb`, `toast`, forms), editor and signature pad, responsive rules |
+| Markup | 549–1060 | `.topbar`, `.hero`, `.tabs`, `#panel-<name>` × 9 (including `panel-edit` with its toolbar/stage/panels), signature modal, footer, `#toast-container` |
+| Application JS | 1062–3197 | `'use strict'` script: local asset URLs, `esc`, validation layer, state, helpers, theme/tabs, drag & drop, downloads, tool sections, editor engine, worker source, init |
 
 ### Markup conventions
 
@@ -167,6 +167,8 @@ There is exactly one mutable global, `S`. Everything else is stateless.
 | `thumbnails` | `{origIdx: dataURL}` | split | Cache of rendered thumbnails |
 | `cuts` | `Set<number>` | split | Visual cut markers, keyed by **position** in `pageOrder` |
 | `mergeFiles` | `{name, ab, pageCount}[]` | merge | Ordered merge queue |
+| `edit` | `object \| null` | edit | Editor session: bytes, pdf.js doc, page plan, object list, history, meta (see §6.6) |
+| `signPad` | `object \| null` | edit | Active signature pad: strokes, current stroke, pen size |
 | `compressFile`, `imagesFile`, `watermarkFile`, `pageNumFile`, `protectFile`, `unlockFile` | `{name, ab}` | each tool | One-shot validated holders |
 
 The two index spaces matter: `pageOrder`/`selected`/`deleted`/`rotations` are in
@@ -318,6 +320,7 @@ Two hard requirements, both easy to break:
 | **Page Numbers** | full gate | pdf-lib | Per page: `drawText(String(start + i))` at one of five positions | `<base>-numbered.pdf` |
 | **Protect** | full gate + password rules | pdf-lib | `doc.encrypt({ userPassword, ownerPassword: random 32 bytes hex, permissions })` then `save()` | `<base>-protected.pdf` |
 | **Unlock** | gate with `allowEncrypted:true` | pdf-lib | `load(ab, {password})` → `create()` + `copyPages` into a **fresh** document → `save()` | `<base>-unlocked.pdf` |
+| **Edit** | full gate + editor limits | pdf.js (render) + pdf-lib (flatten) | Page plan (copy/blank + rotation) and an object list (sign, text, image, rect, ellipse, line, ink, highlight, cover); on save every object is drawn into the copied page | `<base>-edited.pdf` |
 
 Two non-obvious details:
 
@@ -342,6 +345,66 @@ Two non-obvious details:
 ```
 
 No intermediate bytes are persisted. Closing the tab discards everything.
+
+### 6.6 Editor data model (Edit tool)
+
+The editor never mutates the source PDF. It keeps two parallel models and
+reconciles them only at save time.
+
+**Page plan** — `S.edit.plan` is the output page order:
+
+```js
+[{ src: 0, rot: 0, blank: false, w: 612, h: 792 }, …]
+```
+
+- `src` is the original page index (`null` for an inserted blank page).
+- `rot` is an extra rotation (0/90/180/270) on top of the source `/Rotate`.
+- Page operations rewrite this array: rotate changes `rot`, duplicate clones
+  the entry, insert appends `blank:true`, delete removes an entry, move swaps
+  two entries. Object page indices are remapped alongside.
+
+**Object list** — `S.edit.objects`, each item:
+
+```js
+{ id, page, type, fx, fy, fw, fh,      // fractions of the displayed page
+  opacity, color, sw,                   // opacity, colour, stroke width
+  text, size, font,                     // text objects
+  src, aspect,                          // sign / image objects (PNG data URL)
+  strokes, rev }                        // ink point lists / line diagonal
+```
+
+`type` is one of `sign`, `text`, `image`, `rect`, `ellipse`, `line`, `ink`,
+`highlight`, `cover`. Coordinates are display-space fractions, so they survive
+zoom changes and pages of different sizes.
+
+**Rendering** — pdf.js renders the plan page at `scale × devicePixelRatio` and
+the object list is drawn as absolutely positioned DOM nodes over the canvas
+(percent-based `left/top/width/height`, so resizing is cheap). Ink and shapes
+are inline SVG with a `0 0 1 1` viewBox; text is a styled `<div>`; signature
+and image objects are `<img>` PNGs. Dragging/resizing mutates fractions and
+updates the node directly; a full re-render only happens on selection, undo and
+page changes.
+
+**Saving** — for every plan entry the source page is copied (or a blank page is
+added) and its rotation is set to `(sourceRotate + rot) % 360`. Each object is
+then mapped from display fractions to PDF user space with the pdf.js viewport
+(`viewport.convertToPdfPoint`), which accounts for rotation and CropBox offsets:
+
+- images: anchor at the display bottom-left, `rotate: -pageRotation`, so the
+  content appears upright after the viewer applies `/Rotate`;
+- text: same anchor rule, baseline at the top of the box, `drawText` with
+  `maxWidth`/`lineHeight`;
+- rectangles, ellipses and highlights: drawn with the same negative rotation;
+- lines and ink: both endpoints converted, then `drawLine` per segment;
+- cover: a filled white rectangle (a **cover**, not redaction — the original
+  text is still extractable).
+
+Metadata (`title`, `author`, `subject`, `keywords`) is applied to the output
+document. The whole flatten runs on the main thread under the global busy lock
+and reports progress per page.
+
+Undo/redo is a snapshot stack of the object list only (max 40 entries). Page
+operations and metadata are not part of the history — the Pages panel says so.
 
 ---
 
@@ -405,10 +468,14 @@ Practical guidance: prefer the Split tool's "one archive" modes over
 | 11 | Testing | No automated tests, no CI, no lint config — verification is the manual matrix in `CONTRIBUTING.md` | Regressions rely on reviewers |
 | 12 | Local dev | On Windows, `python -m http.server` serves `.js` as `text/plain`, breaking worker `importScripts` | Use `tools/serve.py` |
 | 13 | Brand assets | Only raster PNGs are shipped; the wide lockup carries a baked-in "LOGO UTAMA" label, so the header uses the square icon plus a CSS wordmark (two sources of truth for the name) | Minor; needs an SVG/transparent mark to simplify |
+| 14 | Editor scope | Overlay only: existing text/graphics cannot be edited or removed. "Cover" is a white rectangle, not true redaction — the original text stays extractable. Digitally signed PDFs are invalidated by editing | Communicated in the UI; needs a stronger warning for signed documents |
+| 15 | Editor history | Undo/redo snapshots the object list only; page operations and metadata are one-way until reload | Could surprise users; documented in the Pages panel |
+| 16 | Editor text | Standard PDF fonts (WinAnsi/Latin) only; signatures are raster PNGs, so they are not vector or searchable | Acceptable for signing, not for non-Latin documents |
+| 17 | Editor performance | Page-by-page pdf.js rendering plus a full copy/flatten on save; a 300 MB file is warned about but still allowed | Large documents are slow and memory-hungry |
 
 ---
 
-## 10. Extension guide — adding a ninth tool
+## 10. Extension guide — adding a tenth tool
 
 1. **Tab**: add `.tab-btn` with `onclick="switchTab('<id>')"`; the `<id>` keys
    everything below (use a short lowercase noun: `crop`, `stamp`, …).
@@ -450,6 +517,11 @@ Practical guidance: prefer the Split tool's "one archive" modes over
 | Page numbers | Each position; custom start; large page count |
 | Protect | Output re-opens **only** with the password; wrong confirm password blocked; fields cleared afterwards |
 | Unlock | Encrypted input + correct password → output opens with **no** password prompt; wrong password shows a clear error |
+| Edit — objects | Load a PDF → draw a signature → apply → it appears on the page; add text, an image, a rect, an ellipse, ink and a highlight; undo/redo each step |
+| Edit — pages | Rotate 90°, duplicate, insert a blank page, delete and reorder; save and reopen → page count/rotation match; objects stay upright on rotated pages |
+| Edit — metadata | Title/author/subject/keywords set in the panel survive a save and can be read back |
+| Edit — validation | Non-image file, undersized/oversized image, empty text, object/page limits, no PDF loaded |
+| Editor save | Output opens in a viewer; cover is opaque; rejects encrypted input until unlocked |
 | Validation | `.txt` renamed to `.pdf`, empty file, truncated PDF, >1.5 GB file, encrypted file in each tool |
 | Theme | Light/dark toggle swaps the palette and keeps the two theme buttons in sync |
 | Concurrency | Buttons disable during a run and re-enable after (success and failure) |
@@ -460,7 +532,9 @@ Practical guidance: prefer the Split tool's "one archive" modes over
 
 - **DOM ids**: `panel-<tab>`, `dz-<tab>`, `fi-<tab>`, `pw-<tab>`,
   `pf-/ps-/pp-/pe-<tab>`, `btn-<action>`, `fg-<field>`, `tc-<pageIndex>`,
-  `pname-<partIndex>`.
+  `pname-<partIndex>`, plus the editor namespace `edit-*` (`edit-layer`,
+  `edit-toolbar`, `edit-props`, `edit-stage`) and `sign-*` for the signature
+  pad.
 - **Functions**: verb-first camelCase — `load*File`, `start*`, `render*`,
   `clear*`, `suggestCut*`, `toggle*`, `update*`.
 - **State keys**: camelCase; `Set` for page-index collections; one-shot holders

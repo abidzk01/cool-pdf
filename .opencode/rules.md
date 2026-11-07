@@ -155,6 +155,26 @@ are normative: if a request conflicts with them, say so before proceeding.
 - Copy claims must stay true: AES-256 (not AES-128/RC4), no uploads, no
   accounts, and no file-size claim beyond `LIMITS.maxBytes`.
 
+### Editor rules (Edit tool)
+
+- **Never mutate the source PDF.** Keep the page plan (`S.edit.plan`) and the
+  object list (`S.edit.objects`) until save; the source bytes stay untouched.
+- Store object geometry as display fractions (`fx/fy/fw/fh`, 0..1), never
+  pixels. Clamp every move/resize/creation so the object stays inside the page.
+- All limits live in `EDIT_LIMITS` (file size, page count, objects, text length,
+  image size, history depth).
+- Convert to PDF coordinates only through the pdf.js viewport
+  (`viewport.convertToPdfPoint`); it already handles `/Rotate` and CropBox. Do
+  not hand-roll rotation math. Draw content with `rotate: -pageRotation` so it
+  stays upright.
+- `cover` is a white rectangle and must be labelled as a **cover**, never as
+  redaction. Do not add a "redact" claim without true content removal.
+- Undo/redo snapshots the object list only. If you make page operations
+  undoable, extend the snapshot model instead of hiding the limitation.
+- The signature pad uses Pointer Events (mouse, stylus, touch) and a DPR-scaled
+  canvas; crop to the stroke bounding box and export a transparent PNG. Do not
+  rasterize whole PDF pages unless the user explicitly accepts losing text.
+
 ### If Tailwind is ever introduced (rule for that day)
 
 Approved only if it is a **build-time, committed artifact** — no CDN JIT script

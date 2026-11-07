@@ -1,6 +1,6 @@
 # RxPDF Cool
 
-A free, open-source, **100% client-side PDF toolkit**. Eight PDF tools that run
+A free, open-source, **100% client-side PDF toolkit**. Nine PDF tools that run
 entirely in your browser — your files never leave your device. The page opens
 straight on the tools: a compact topbar, one line of copy, then the drop zone.
 
@@ -20,6 +20,7 @@ straight on the tools: a compact topbar, one line of copy, then the drop zone.
 | 🔢 **Page Numbers** | Add configurable page numbers in any position and format |
 | 🔒 **Password Protect** | **AES-256** encrypt your PDFs in one click |
 | 🔓 **Unlock PDF** | Remove the password from a PDF you own |
+| 🖊️ **Edit PDF** | Draw a signature with mouse/touch, add text, images, shapes, freehand ink, highlights or cover boxes, rotate/duplicate/insert/delete pages, and edit metadata |
 
 ## Privacy by design
 

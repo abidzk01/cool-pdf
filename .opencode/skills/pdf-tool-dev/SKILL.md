@@ -1,6 +1,6 @@
 ---
 name: PDF Tool Development
-description: Add a new client-side PDF tool to RxPDF Cool, or change the Split, Merge, Compress, Images, Watermark, Page Numbers, Protect or Unlock tool. Use when the task touches index.html, the Blob worker, validation, downloads or progress in this repo.
+description: Add a new client-side PDF tool to RxPDF Cool, or change the Split, Merge, Compress, Images, Watermark, Page Numbers, Protect, Unlock or Edit (signature/overlay) tool. Use when the task touches index.html, the Blob worker, validation, downloads, progress or the editor.
 ---
 
 # PDF Tool Development
@@ -44,6 +44,18 @@ executable checklist on top of them.
    reintroduce a separate landing screen.
 9. **Docs.** Update `docs/ARCHITECTURE.md` §6.4 (pipelines), §9 (gaps) and §11
    (verification matrix).
+
+## Editing the Edit tool
+
+The overlay editor has extra invariants — read `.opencode/rules.md`
+("Editor rules") and `docs/ARCHITECTURE.md` §6.6 before touching it:
+
+- source bytes are never mutated; work on `S.edit.plan` + `S.edit.objects`;
+- geometry is display fractions, converted at save through
+  `viewport.convertToPdfPoint`;
+- new object types need a renderer (`buildEditObject`), a save branch
+  (`editSave`), a limits entry (`EDIT_LIMITS`) and a verification case;
+- `cover` is a white rectangle, not redaction.
 
 ## Verify (do not skip)
 

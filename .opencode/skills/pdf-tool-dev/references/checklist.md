@@ -26,6 +26,19 @@ Copy this into the PR description and tick what you verified.
       expected filename.
 - [ ] Split and Merge still work (Blob worker + `importScripts` + `PDFLIB_URL`).
 - [ ] Protect output requires the password; Unlock output opens without one.
+- [ ] Edit: signature draws with mouse/touch, objects move/resize, undo/redo
+      works, page ops and metadata survive a save, and the output reopens.
+
+## Editor
+
+- [ ] Signature pad: pointer/touch drawing, undo, clear, crop to strokes, and a
+      transparent PNG lands on the current page.
+- [ ] Text, image, rect, ellipse, line, ink, highlight and cover render and save.
+- [ ] Coordinates stay inside the page; saving a rotated page keeps objects
+      upright (check the output in a viewer, not just the editor).
+- [ ] `cover` is described as a cover, never as redaction.
+- [ ] Limits hold: object count, text length, image size/type, page count.
+- [ ] Page operations remap objects correctly (duplicate/insert/delete/move).
 
 ## Quality
 

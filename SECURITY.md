@@ -56,7 +56,8 @@ RxPDF Cool runs **entirely in the user's browser**. There is no backend, no uplo
 - **No analytics, telemetry, or tracking of any kind.** There are no third-party scripts at all.
 - **One validation gate for every file**: extension check, size ceiling, `%PDF-` magic bytes within the first 1024 bytes, and a real pdf-lib parse before any tool touches the bytes. Form values are clamped or allowlisted, and page ranges are validated against the document's page count.
 - **Encryption is real.** Protect applies **AES-256** (ISO 32000-2 R6) through `@cantoo/pdf-lib`'s `encrypt()`, with a random 32-byte owner password per save; Unlock decrypts with the supplied password and rebuilds a fresh document so the output carries no `/Encrypt` dictionary. (Upstream `pdf-lib@1.17.1` silently ignored password options, which is why the project switched to the maintained fork.)
-- **MIT-licensed source** — anyone can audit the entire app in a single ~1,830-line `index.html`.
+- **MIT-licensed source** — anyone can audit the entire app in a single ~3,200-line `index.html`.
+- **Editor stays local.** Signatures are drawn on a canvas, cropped client-side and embedded as PNG; no ink, image or metadata value is stored or transmitted.
 
 ## Known limitations
 
