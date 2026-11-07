@@ -14,7 +14,7 @@ straight on the tools: a compact topbar, one line of copy, then the drop zone.
 | --- | --- |
 | ✂️ **Split PDF** | Extract pages, reorder, rotate or delete visually, then cut the document into parts with one click |
 | 🔗 **Merge PDFs** | Combine multiple PDFs into one, drag to reorder |
-| 🗜️ **Compress PDF** | Re-save with object streams to drop redundant data (results vary by file) |
+| 🗜️ **Compress PDF** | Five modes: Lossless re-save, Balanced (150 DPI), Small (100 DPI), Target size (KB/MB) and Percentage of original. Lossy modes rasterize each page, so expect unselectable text |
 | 🖼️ **PDF → Images** | Export every page as PNG or JPEG, up to 216 DPI |
 | 🔏 **Watermark** | Stamp text on every page with custom size, opacity, position and colour |
 | 🔢 **Page Numbers** | Add configurable page numbers in any position and format |

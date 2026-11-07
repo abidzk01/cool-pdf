@@ -40,7 +40,8 @@ function hasPdfMagic(ab){
 function fmtBytes(n){
   if(n>=1073741824)return (n/1073741824).toFixed(2)+' GB';
   if(n>=1048576)return (n/1048576).toFixed(1)+' MB';
-  return Math.max(1,Math.round(n/1024))+' KB';
+  if(n>=1024)return Math.round(n/1024)+' KB';
+  return Math.max(0,Math.round(n))+' B';
 }
 
 // Single entry point for every file input and drop zone.
@@ -265,7 +266,7 @@ function dzDrop(e,id){
   if(!files.length)return;
   if(id==='split')loadSplitFile(files[0]);
   else if(id==='merge')addMergeFiles(files);
-  else if(id==='compress')startCompress(files[0]);
+  else if(id==='compress')loadCompressFile(files[0]);
   else if(id==='images')startImages(files[0]);
   else if(id==='watermark')loadWatermarkFile(files[0]);
   else if(id==='pagenums')loadPageNumFile(files[0]);

@@ -443,7 +443,7 @@ Two hard requirements, both easy to break:
 | --- | --- | --- | --- | --- |
 | **Split** | full gate | pdf.js (UI) + pdf-lib (worker) | Groups pages by cuts / selection / range / every-N; `copyPages` into one document per group, applying `rotations` | `.pdf`, or `.zip` when >1 group |
 | **Merge** | gate per file, max 50 files | pdf-lib (worker) | `create()` then `copyPages` from each source in queue order | `merged.pdf` |
-| **Compress** | full gate | pdf-lib | Re-save with `useObjectStreams:true`, `addDefaultPage:false` and drop redundant objects | `<base>-compressed.pdf` |
+| **Compress** | full gate + mode inputs | pdf-lib (lossless) / pdf.js + canvas + pdf-lib (lossy) | Lossless re-save; Balanced (150 DPI, q 0.70); Small (100 DPI, q 0.55); Target size / Percentage: bounded search over DPI candidates and JPEG quality, re-encoding per-page masters | `<base>-compressed.pdf` |
 | **PDF → Images** | full gate | pdf.js | Per page: `getViewport({scale})` → canvas → `toDataURL('image/png'|'image/jpeg', 0.92)` → base64 → `Uint8Array` | `<base>-images.zip` |
 | **Watermark** | full gate | pdf-lib | Per page: `drawText` at position with RGB + opacity; centre is rotated −45° | `<base>-watermarked.pdf` |
 | **Page Numbers** | full gate | pdf-lib | Per page: `drawText(String(start + i))` at one of five positions | `<base>-numbered.pdf` |
@@ -535,6 +535,46 @@ and reports progress per page.
 Undo/redo is a snapshot stack of the object list only (max 40 entries). Page
 operations and metadata are not part of the history — the Pages panel says so.
 
+### 6.7 Compression modes (Compress tool)
+
+`S.compressFile` holds the validated file; the mode is read from the panel. All
+modes stay in the browser and end in `downloadBytes`.
+
+| Mode | What it does | Text kept |
+| --- | --- | --- |
+| **Lossless** | `doc.save({useObjectStreams:true})` — structure only | yes |
+| **Balanced** | Rasterize at 150 DPI, JPEG q 0.70 | no |
+| **Small** | Rasterize at 100 DPI, JPEG q 0.55 | no |
+| **Target size** | Bounded search for a KB/MB target | no |
+| **Percentage** | Target = original × percentage, then the same search | no |
+
+Lossy pipeline:
+
+1. `renderCompressMasters()` renders each page **once** at the chosen DPI into a
+   white-filled canvas, capped at 32 MP (`COMPRESS_LIMITS.maxPixels`), and keeps
+   the page as a JPEG blob ("master") plus its point size. Pages are limited to
+   300 in lossy modes.
+2. `assembleCompressedPdf()` decodes each master, re-encodes it at the candidate
+   JPEG quality, embeds it and draws it full-page at the original point size
+   (rotation baked in, since the viewport is rendered with `page.rotate`).
+
+Target/percentage search is deliberately bounded so a click cannot run forever:
+
+- DPI candidates: one chosen from the target ratio (72/100/150/200), then `100`
+  and `72` as fallbacks — at most 3 render passes.
+- Per DPI, a binary search over JPEG quality in `[0.30, 0.92]`, 5 steps,
+  stopping early within 3% of the target.
+- `betterCompressCandidate()` prefers a result that fits the target, then the
+  largest fitting file (best quality), otherwise the smallest.
+- The real output is measured each step, so the toast reports the truth:
+  `Compressed to <size> (target <target>)` or `Could not reach … smallest was …`.
+- Targets are clamped to `[10 KB, original size]` and percentage to 5–90%.
+
+Trade-offs are unavoidable and are stated in the UI: bookmarks, links, forms,
+annotations, metadata and selectable text are dropped by lossy modes; Balanced
+can make an already-optimised file larger, in which case the tool says so and
+suggests Small or a lower target.
+
 ---
 
 ## 7. Security model (implemented)
@@ -589,7 +629,7 @@ Practical guidance: prefer the Split tool's "one archive" modes over
 | --- | --- | --- | --- |
 | 1 | Split UI | `.add-cut-zone` CSS exists but no element is ever created; the "Click between pages to add ✂️ cuts" hint is not backed by UI. Cuts can only be placed via the **Quick split** buttons. | Misleading UX; the core "visual split" promise is only partly delivered |
 | 2 | Split model | `cuts` are positions while `selected/deleted/rotations` are original indices; reordering or deleting pages after cuts are placed can shift parts unexpectedly | Edge-case incorrect output |
-| 3 | Compress | Re-save only; images are not re-encoded. Files can grow slightly; claimed "up to 80%" is not guaranteed | Overstated promise |
+| 3 | Compress | Lossless mode cannot shrink image-heavy files. Lossy modes rasterize every page, so text is no longer selectable and links/forms/annotations are lost; Balanced can grow an already-optimised file. Target mode is approximate and bounded | Clearly labelled; real image recompression that keeps text would need a WASM engine |
 | 4 | Text drawing | `drawText` uses the built-in Helvetica (WinAnsi). Watermark text and filenames with characters outside that set will throw or be dropped | Non-Latin scripts unusable in Watermark |
 | 5 | Page numbers | Horizontal centring uses an estimated glyph width (`fontSize * 0.3/0.6 * length`) instead of measured text width | Off-centre numbers on wide glyph runs |
 | 6 | Unlock | Rebuilding via `copyPages` drops document-level structures (outlines, named destinations, some form data) | Lossy unlock |
@@ -644,7 +684,11 @@ Practical guidance: prefer the Split tool's "one archive" modes over
 | Split | Load a 6-page PDF → thumbnails render; quick-cut "Into 3 parts" → parts summary shows 3; download each and the ZIP |
 | Split edge | Range `1-3,5` works; `9-99` is rejected with a toast; delete + rotate then export |
 | Merge | Two PDFs → order drag-and-drop → merged page count = sum |
-| Compress | Output opens; size comparison is shown (and honest when nothing shrank) |
+| Compress — lossless | Output opens; size comparison is shown and the "no size reduction" message appears when nothing shrank |
+| Compress — lossy | Balanced and Small produce the same page count at the original page size; text extraction returns nothing (expected) |
+| Compress — target | A reachable target (e.g. 600 KB) is met and reported; an impossible target (e.g. 50 KB) warns with the smallest size and DPI used |
+| Compress — percentage | Slider previews `before → target`; result is ≤ the computed target or the warning appears |
+| Compress — edge | Target ≥ original is clamped; huge page counts hit the 300-page lossy limit; language switch relabels modes and preview |
 | Images | DPI 72 and 216; single-page failure must not abort silently |
 | Watermark | Each position; opacity 5 and 100; non-ASCII text is a known limitation |
 | Page numbers | Each position; custom start; large page count |

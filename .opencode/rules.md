@@ -217,6 +217,24 @@ are normative: if a request conflicts with them, say so before proceeding.
 - After editing any CSS/JS file, run `node tools/stamp-assets.js` so
   `index.html` points at the new hashed URLs.
 
+### Compress rules (Compress tool)
+
+- **Lossless stays lossless.** Never make the Lossless mode lossy or claim it
+  reaches a size target; it only re-saves structure.
+- Lossy modes (Balanced, Small, Target size, Percentage) replace each page with
+  a JPEG. Keep the "text will not be selectable" warning visible and never
+  describe the output as editable/searchable.
+- Keep the target search **bounded**: DPI candidates and quality steps come from
+  `COMPRESS_LIMITS`, the page cap is enforced, and every result is measured, not
+  estimated. Never report a target as reached when it was not.
+- Render each page once per DPI (`renderCompressMasters`) and re-encode masters
+  for the quality search instead of re-rendering the PDF on every attempt.
+- Everything stays in the browser: no upload, no server-side converter, no WASM
+  dependency (a real image re-compressor that keeps text would need one).
+- File intake goes through `readPdfFile()`, results through `downloadBytes()`,
+  progress through `showProgress`/`setProgress`, and the state lives in
+  `S.compressFile`.
+
 ### If Tailwind is ever introduced (rule for that day)
 
 Approved only if it is a **build-time, committed artifact** — no CDN JIT script

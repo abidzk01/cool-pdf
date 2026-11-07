@@ -82,8 +82,28 @@ const I18N_ID = {
 
   // ── Compress ─────────────────────────────────────────────────────
   '🗜️ Compress PDF': '🗜️ Kompres PDF',
-  'Removes redundant objects and compresses streams. Works best on PDFs with many images or embedded fonts. Results vary by file.':
-    'Menghapus objek berulang dan mengompresi stream. Paling efektif untuk PDF dengan banyak gambar atau font tertanam. Hasil bervariasi per file.',
+  'Lossless re-saves the PDF and keeps text selectable. The other modes turn each page into a JPEG image, which shrinks scans and image-heavy files a lot but makes text unselectable.':
+    'Lossless menyusun ulang PDF dan teks tetap bisa dipilih. Mode lain mengubah setiap halaman menjadi gambar JPEG, yang sangat mengecilkan hasil scan dan file berisi banyak gambar tetapi teks tidak bisa dipilih lagi.',
+  'Mode': 'Mode',
+  'Lossless (keeps text)': 'Lossless (teks tetap utuh)',
+  'Balanced (150 DPI)': 'Seimbang (150 DPI)',
+  'Small (100 DPI)': 'Kecil (100 DPI)',
+  'Target size': 'Ukuran target',
+  'Percentage of original': 'Persentase dari aslinya',
+  'Size of original': 'Ukuran dari aslinya',
+  'Result target': 'Perkiraan hasil',
+  'Lossy modes replace every page with an image: text can no longer be selected or searched, and links, forms, annotations and bookmarks are dropped.':
+    'Mode lossy mengganti setiap halaman dengan gambar: teks tidak bisa dipilih atau dicari, dan link, form, anotasi serta bookmark hilang.',
+  '⚡ Compress & Download': '⚡ Kompres & Unduh',
+  'Target mode renders each page several times to hit the size you asked for, so it takes longer on big documents.':
+    'Mode target merender setiap halaman beberapa kali untuk mencapai ukuran yang diminta, jadi lebih lama pada dokumen besar.',
+  '{n}% of the original size': '{n}% dari ukuran asli',
+  'Rendering page {i}/{total} ({dpi} DPI)': 'Merender halaman {i}/{total} ({dpi} DPI)',
+  'Searching quality {q}% · {size}': 'Mencari kualitas {q}% · {size}',
+  'Compressed to {size} (target {target})': 'Dikompres ke {size} (target {target})',
+  'Could not reach {target} — smallest was {size} at {dpi} DPI': 'Tidak mencapai {target} — hasil terkecil {size} pada {dpi} DPI',
+  'The result is larger than the original ({size}) — try Small or a lower target': 'Hasilnya lebih besar dari aslinya ({size}) — coba mode Kecil atau target lebih rendah',
+  'This PDF has {n} pages — lossy compression is limited to {max}': 'PDF ini memiliki {n} halaman — kompresi lossy dibatasi {max} halaman',
   'Drop PDF to compress': 'Letakkan PDF untuk dikompres',
   'Processing...': 'Memproses...',
 

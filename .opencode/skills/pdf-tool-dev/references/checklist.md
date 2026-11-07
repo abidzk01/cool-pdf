@@ -29,6 +29,19 @@ Copy this into the PR description and tick what you verified.
 - [ ] Edit: signature draws with mouse/touch, objects move/resize, undo/redo
       works, page ops and metadata survive a save, and the output reopens.
 
+## Compress
+
+- [ ] Lossless keeps text selectable and reports "no size reduction" honestly.
+- [ ] Balanced/Small keep the page count and page size; the lossy warning is
+      visible and text extraction returns nothing.
+- [ ] Target mode: a reachable target is met and reported; an impossible target
+      warns with the smallest size and DPI.
+- [ ] Percentage: preview shows `before → target` and the result is <= target or
+      the warning appears.
+- [ ] Balanced on an already-optimised file explains the growth instead of
+      claiming success.
+- [ ] Switching EN/ID relabels the mode options, warning, hint and preview.
+
 ## Editor
 
 - [ ] Signature pad: pointer/touch drawing, undo, clear, crop to strokes, and a

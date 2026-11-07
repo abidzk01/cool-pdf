@@ -3,6 +3,7 @@
 // ── Editor init and global wiring ────────────────────────────────────
 setTheme(S.theme);
 onSplitModeChange();
+onCompressModeChange();
 initSignPad();
 G('sign-pen').addEventListener('input',drawSignPad);
 G('edit-layer').addEventListener('pointerdown',editLayerDown);
@@ -31,6 +32,7 @@ function refreshDynamicTranslations(){
     renderPageGrid();
     renderPartsSummary();
   }
+  if(S.compressFile)updateCompressPreview();
   if(S.mergeFiles&&S.mergeFiles.length)renderMergeList();
   if(S.edit){
     G('edit-page-label').textContent=(S.edit.page+1)+' / '+S.edit.plan.length;

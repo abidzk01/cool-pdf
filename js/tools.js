@@ -1,31 +1,245 @@
 'use strict';
-
+// ══════════════════════════════════════════════════════════════════════
 // COMPRESS
 // ══════════════════════════════════════════════════════════════════════
-async function startCompress(file){
+const COMPRESS_MODES={
+  balanced:{dpi:150,quality:.7},
+  small:{dpi:100,quality:.55},
+};
+const COMPRESS_LIMITS={
+  maxDpi:200,minDpi:72,maxPixels:32e6,
+  qualityFloor:.3,qualityCeil:.92,searchSteps:5,maxMasterPages:300,
+};
+
+function compressMode(){return G('compress-mode').value;}
+
+function onCompressModeChange(){
+  const mode=compressMode();
+  G('fg-compress-target').style.display=mode==='target'?'':'none';
+  G('fg-compress-pct').style.display=mode==='percent'?'':'none';
+  G('fg-compress-preview').style.display=(mode==='target'||mode==='percent')?'':'none';
+  G('compress-warning').style.display=mode==='lossless'?'none':'';
+  updateCompressPreview();
+}
+
+// Requested output size in bytes for the target/percentage modes.
+function compressTargetBytes(){
+  const E=S.compressFile;
+  const mode=compressMode();
+  const pct=clampInt(G('compress-pct').value,5,90,30);
+  if(mode==='percent')return E?Math.round(E.ab.byteLength*pct/100):0;
+  const value=clampInt(G('compress-target').value,10,2048,300);
+  return G('compress-unit').value==='mb'?value*1024*1024:value*1024;
+}
+
+function updateCompressPreview(){
+  const E=S.compressFile;
+  const pct=clampInt(G('compress-pct').value,5,90,30);
+  G('compress-pct-value').textContent=pct+'%';
+  const mode=compressMode();
+  if(mode!=='target'&&mode!=='percent')return;
+  const target=compressTargetBytes();
+  if(E)G('compress-preview').textContent=fmtBytes(E.ab.byteLength)+' → '+fmtBytes(target);
+  else G('compress-preview').textContent=mode==='percent'?t('{n}% of the original size',{n:pct}):fmtBytes(target);
+}
+
+async function loadCompressFile(file){
   if(!file||S.busy)return;
   let ab;
   try{ab=await readPdfFile(file);}
   catch(err){toast(err.message,'e');return;}
+  S.compressFile={name:file.name,ab};
+  G('compress-opts').style.display='';
+  G('compress-file-info').textContent=file.name+' · '+fmtBytes(ab.byteLength);
+  G('fi-compress').value='';
+  onCompressModeChange();
+  updateCompressPreview();
+  toast(t('Loaded "{name}"',{name:file.name}),'s',2000);
+}
+
+function clearCompress(){
+  S.compressFile=null;
+  G('compress-opts').style.display='none';
+  G('fi-compress').value='';
+  G('compress-file-info').textContent='';
+  showProgress('compress',false);
+}
+
+function canvasToJpegBytes(canvas,quality){
+  return new Promise(resolve=>{
+    canvas.toBlob(async blob=>{
+      if(!blob){resolve(null);return;}
+      resolve(new Uint8Array(await blob.arrayBuffer()));
+    },'image/jpeg',quality);
+  });
+}
+
+function blobToImage(blob){
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(blob);
+    const img=new Image();
+    img.onload=()=>resolve({img,url});
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('image decode failed'));};
+    img.src=url;
+  });
+}
+
+// Render every page once at `dpi` and keep it as a JPEG blob (the "master").
+// The quality search then only re-encodes these masters, so the PDF is never
+// rendered twice for one attempt.
+async function renderCompressMasters(pdfDoc,dpi,onProgress){
+  const n=pdfDoc.numPages;
+  if(n>COMPRESS_LIMITS.maxMasterPages){
+    throw new Error(t('This PDF has {n} pages — lossy compression is limited to {max}',{n,max:COMPRESS_LIMITS.maxMasterPages}));
+  }
+  const masters=[];
+  for(let i=1;i<=n;i++){
+    const page=await pdfDoc.getPage(i);
+    const base=page.getViewport({scale:1,rotation:page.rotate});
+    let scale=dpi/72;
+    if(base.width*scale*base.height*scale>COMPRESS_LIMITS.maxPixels){
+      scale=Math.sqrt(COMPRESS_LIMITS.maxPixels/(base.width*base.height));
+    }
+    const vp=page.getViewport({scale,rotation:page.rotate});
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.max(1,Math.ceil(vp.width));
+    canvas.height=Math.max(1,Math.ceil(vp.height));
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#ffffff';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    await page.render({canvasContext:ctx,viewport:vp,background:'#ffffff'}).promise;
+    const blob=await new Promise(res=>canvas.toBlob(res,'image/jpeg',COMPRESS_LIMITS.qualityCeil));
+    if(!blob)throw new Error(t('Compression failed: ')+'canvas export');
+    masters.push({blob,pageW:base.width,pageH:base.height});
+    canvas.width=1;canvas.height=1;
+    onProgress&&onProgress(i,n);
+  }
+  return masters;
+}
+
+async function assembleCompressedPdf(masters,quality){
+  const out=await PDFLib.PDFDocument.create();
+  for(const master of masters){
+    const decoded=await blobToImage(master.blob);
+    const canvas=document.createElement('canvas');
+    canvas.width=decoded.img.naturalWidth;
+    canvas.height=decoded.img.naturalHeight;
+    canvas.getContext('2d').drawImage(decoded.img,0,0);
+    URL.revokeObjectURL(decoded.url);
+    const bytes=await canvasToJpegBytes(canvas,quality);
+    if(!bytes)throw new Error(t('Compression failed: ')+'canvas export');
+    const embedded=await out.embedJpg(bytes);
+    const page=out.addPage([master.pageW,master.pageH]);
+    page.drawImage(embedded,{x:0,y:0,width:master.pageW,height:master.pageH});
+    canvas.width=1;canvas.height=1;
+  }
+  return out.save();
+}
+
+// A fitting file always wins; between two that fit, keep the larger (best
+// quality); if nothing fits, keep the smallest.
+function betterCompressCandidate(candidate,best,target){
+  const fits=candidate.bytes.length<=target;
+  const bestFits=best.bytes.length<=target;
+  if(fits!==bestFits)return fits;
+  if(fits&&bestFits)return candidate.bytes.length>best.bytes.length;
+  return candidate.bytes.length<best.bytes.length;
+}
+
+async function findCompressTarget(ab,target,onProgress){
+  const pdfDoc=await pdfjsLib.getDocument({data:ab.slice(0)}).promise;
+  const ratio=target/ab.byteLength;
+  const preferred=ratio<=.15?72:ratio<=.4?100:ratio<=.7?150:COMPRESS_LIMITS.maxDpi;
+  const dpis=[];
+  for(const dpi of [preferred,100,COMPRESS_LIMITS.minDpi]){
+    if(!dpis.includes(dpi)&&dpi<=COMPRESS_LIMITS.maxDpi)dpis.push(dpi);
+  }
+  let best=null;
+  for(let d=0;d<dpis.length;d++){
+    const dpi=dpis[d];
+    const masters=await renderCompressMasters(pdfDoc,dpi,(i,total)=>{
+      onProgress&&onProgress({phase:'render',dpi,i,total,attempt:d+1,attempts:dpis.length});
+    });
+    let lo=COMPRESS_LIMITS.qualityFloor,hi=COMPRESS_LIMITS.qualityCeil;
+    for(let step=0;step<COMPRESS_LIMITS.searchSteps;step++){
+      const quality=(lo+hi)/2;
+      const bytes=await assembleCompressedPdf(masters,quality);
+      const candidate={bytes,quality,dpi};
+      if(!best||betterCompressCandidate(candidate,best,target))best=candidate;
+      onProgress&&onProgress({phase:'search',dpi,quality,size:bytes.length,target,step:step+1,steps:COMPRESS_LIMITS.searchSteps,attempt:d+1,attempts:dpis.length});
+      if(bytes.length>target)hi=quality;else lo=quality;
+      if(Math.abs(bytes.length-target)<target*.03)break;
+    }
+    if(best&&best.bytes.length<=target&&best.bytes.length>=target*.6)break;
+  }
+  return {best,target,original:ab.byteLength};
+}
+
+async function startCompress(){
+  const file=S.compressFile;
+  if(!file||S.busy)return;
+  const mode=compressMode();
+  const original=file.ab.byteLength;
   S.startTime=Date.now();
   setAllBusy(true);
   showProgress('compress',true);
-  G('pf-compress').style.width='30%';
+  setProgress('compress',0,1);
+  G('pf-compress').style.width='5%';
   G('ps-compress').textContent=t('Processing...');
   try{
-    const doc=await PDFLib.PDFDocument.load(ab);
-    G('pf-compress').style.width='70%';
-    const bytes=await doc.save({useObjectStreams:true,addDefaultPage:false});
+    let bytes;
+    if(mode==='lossless'){
+      const doc=await PDFLib.PDFDocument.load(file.ab.slice(0));
+      G('pf-compress').style.width='70%';
+      bytes=await doc.save({useObjectStreams:true,addDefaultPage:false});
+    }else if(mode==='percent'||mode==='target'){
+      const target=Math.max(10*1024,Math.min(compressTargetBytes(),original));
+      const result=await findCompressTarget(file.ab,target,info=>{
+        if(info.phase==='render'){
+          setProgress('compress',info.i,info.total);
+          G('ps-compress').textContent=t('Rendering page {i}/{total} ({dpi} DPI)',{i:info.i,total:info.total,dpi:info.dpi});
+        }else{
+          G('ps-compress').textContent=t('Searching quality {q}% · {size}',{q:Math.round(info.quality*100),size:fmtBytes(info.size)});
+        }
+      });
+      if(!result.best)throw new Error(t('Compression failed: ')+'no output');
+      bytes=result.best.bytes;
+      const base=file.name.replace(/\.pdf$/i,'');
+      downloadBytes(bytes,base+'-compressed.pdf');
+      setProgress('compress',1,1);
+      G('pf-compress').style.width='100%';
+      G('ps-compress').textContent=`${(original/1024).toFixed(0)} KB → ${(bytes.byteLength/1024).toFixed(0)} KB`;
+      if(bytes.byteLength<=target){
+        toast(t('Compressed to {size} (target {target})',{size:fmtBytes(bytes.byteLength),target:fmtBytes(target)}),'s',5000);
+      }else{
+        toast(t('Could not reach {target} — smallest was {size} at {dpi} DPI',{target:fmtBytes(target),size:fmtBytes(bytes.byteLength),dpi:result.best.dpi}),'w',7000);
+      }
+      setTimeout(()=>showProgress('compress',false),1500);
+      return;
+    }else{
+      const preset=COMPRESS_MODES[mode]||COMPRESS_MODES.balanced;
+      const pdfDoc=await pdfjsLib.getDocument({data:file.ab.slice(0)}).promise;
+      const masters=await renderCompressMasters(pdfDoc,preset.dpi,(i,total)=>{
+        setProgress('compress',i,total);
+        G('ps-compress').textContent=t('Rendering page {i}/{total} ({dpi} DPI)',{i,total,dpi:preset.dpi});
+      });
+      bytes=await assembleCompressedPdf(masters,preset.quality);
+    }
     G('pf-compress').style.width='100%';
-    G('ps-compress').textContent=`${(ab.byteLength/1024).toFixed(0)} KB → ${(bytes.byteLength/1024).toFixed(0)} KB`;
-    const saved=ab.byteLength-bytes.byteLength;
-    const pct=((saved/ab.byteLength)*100).toFixed(1);
+    G('ps-compress').textContent=`${(original/1024).toFixed(0)} KB → ${(bytes.byteLength/1024).toFixed(0)} KB`;
+    const saved=original-bytes.byteLength;
+    const pct=((saved/original)*100).toFixed(1);
     const baseName=file.name.replace(/\.pdf$/i,'');
     downloadBytes(bytes,baseName+'-compressed.pdf');
     if(saved>0)toast(t('Compressed! Saved {kb} KB ({pct}%)',{kb:(saved/1024).toFixed(0),pct}),'s');
-    else toast(t('Re-saved — this PDF was already optimised (no size reduction)'),'i');
-  }catch(err){toast(t('Compression failed: ')+err.message,'e');}
-  finally{setAllBusy(false);}
+    else if(mode==='lossless')toast(t('Re-saved — this PDF was already optimised (no size reduction)'),'i');
+    else toast(t('The result is larger than the original ({size}) — try Small or a lower target',{size:fmtBytes(bytes.byteLength)}),'w',6000);
+    setTimeout(()=>showProgress('compress',false),1500);
+  }catch(err){
+    toast(t('Compression failed: ')+err.message,'e');
+  }finally{
+    setAllBusy(false);
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════

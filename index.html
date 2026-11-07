@@ -38,7 +38,7 @@
 <script src="vendor/jszip/jszip.min.js"></script>
 <link rel="stylesheet" href="assets/css/theme.css?v=2a538e84">
 <link rel="stylesheet" href="assets/css/layout.css?v=ab97a1b0">
-<link rel="stylesheet" href="assets/css/components.css?v=e36ec509">
+<link rel="stylesheet" href="assets/css/components.css?v=325ab235">
 <link rel="stylesheet" href="assets/css/editor.css?v=111a5759">
 <link rel="stylesheet" href="assets/css/responsive.css?v=9e27b835">
 
@@ -209,13 +209,57 @@
 <div class="panel" id="panel-compress">
   <div class="card">
     <h3 data-i18n="🗜️ Compress PDF">🗜️ Compress PDF</h3>
-    <div class="info-box" data-i18n="Removes redundant objects and compresses streams. Works best on PDFs with many images or embedded fonts. Results vary by file.">Removes redundant objects and compresses streams. Works best on PDFs with many images or embedded fonts. Results vary by file.</div>
+    <div class="info-box" data-i18n="Lossless re-saves the PDF and keeps text selectable. The other modes turn each page into a JPEG image, which shrinks scans and image-heavy files a lot but makes text unselectable.">Lossless re-saves the PDF and keeps text selectable. The other modes turn each page into a JPEG image, which shrinks scans and image-heavy files a lot but makes text unselectable.</div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label data-i18n="Mode">Mode</label>
+        <select id="compress-mode" onchange="onCompressModeChange()">
+          <option value="lossless" data-i18n="Lossless (keeps text)">Lossless (keeps text)</option>
+          <option value="balanced" data-i18n="Balanced (150 DPI)">Balanced (150 DPI)</option>
+          <option value="small" data-i18n="Small (100 DPI)">Small (100 DPI)</option>
+          <option value="target" data-i18n="Target size">Target size</option>
+          <option value="percent" data-i18n="Percentage of original">Percentage of original</option>
+        </select>
+      </div>
+      <div class="form-group" id="fg-compress-target" style="display:none">
+        <label data-i18n="Target size">Target size</label>
+        <div style="display:flex;gap:6px">
+          <input type="number" id="compress-target" min="10" max="2048" value="300" style="width:100px" oninput="updateCompressPreview()">
+          <select id="compress-unit" onchange="updateCompressPreview()">
+            <option value="kb">KB</option>
+            <option value="mb">MB</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" id="fg-compress-pct" style="display:none">
+        <label><span data-i18n="Size of original">Size of original</span> <span id="compress-pct-value">30%</span></label>
+        <input type="range" id="compress-pct" min="5" max="90" step="5" value="30" oninput="updateCompressPreview()">
+      </div>
+      <div class="form-group" id="fg-compress-preview" style="display:none">
+        <label data-i18n="Result target">Result target</label>
+        <span id="compress-preview" style="font-size:.82rem;font-weight:600;color:var(--text-m)">—</span>
+      </div>
+    </div>
+
+    <div class="info-box" id="compress-warning" style="display:none" data-i18n="Lossy modes replace every page with an image: text can no longer be selected or searched, and links, forms, annotations and bookmarks are dropped.">Lossy modes replace every page with an image: text can no longer be selected or searched, and links, forms, annotations and bookmarks are dropped.</div>
+
     <div class="drop-zone" id="dz-compress" ondragover="dzOver(event,'compress')" ondragleave="dzLeave('compress')" ondrop="dzDrop(event,'compress')">
       <span class="dz-icon">📦</span>
       <h4 data-i18n="Drop PDF to compress">Drop PDF to compress</h4>
       <p data-i18n="or click to browse">or click to browse</p>
-      <input type="file" id="fi-compress" accept=".pdf" onchange="startCompress(this.files[0])">
+      <input type="file" id="fi-compress" accept=".pdf" onchange="loadCompressFile(this.files[0])">
     </div>
+
+    <div id="compress-opts" style="display:none;margin-top:14px">
+      <div class="form-row" style="align-items:center">
+        <button class="btn btn-primary" id="btn-compress" onclick="startCompress()" data-i18n="⚡ Compress &amp; Download">⚡ Compress &amp; Download</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearCompress()" data-i18n="✕ Clear">✕ Clear</button>
+        <span id="compress-file-info" style="font-size:.78rem;color:var(--text-m)"></span>
+      </div>
+      <p class="hint" data-i18n="Target mode renders each page several times to hit the size you asked for, so it takes longer on big documents.">Target mode renders each page several times to hit the size you asked for, so it takes longer on big documents.</p>
+    </div>
+
     <div class="progress-wrap" id="pw-compress">
       <div class="progress-bar"><div class="progress-fill" id="pf-compress"></div></div>
       <div class="progress-meta"><span id="ps-compress"></span><span id="pp-compress"></span><span id="pe-compress"></span></div>
@@ -566,14 +610,14 @@
 
 <div id="toast-container"></div>
 
-<script src="js/i18n-data.js?v=3f7fd32e"></script>
+<script src="js/i18n-data.js?v=3564bc27"></script>
 <script src="js/i18n.js?v=d93ecf38"></script>
-<script src="js/core.js?v=e3c567af"></script>
+<script src="js/core.js?v=c183d64a"></script>
 <script src="js/split.js?v=4cb5bd08"></script>
 <script src="js/merge.js?v=45de4f08"></script>
-<script src="js/tools.js?v=16f82103"></script>
+<script src="js/tools.js?v=7c1e4926"></script>
 <script src="js/editor.js?v=f79a7fd6"></script>
-<script src="js/app.js?v=448c0d75"></script>
+<script src="js/app.js?v=5f21a04f"></script>
 
 </body>
 </html>
