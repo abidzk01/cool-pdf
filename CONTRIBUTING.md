@@ -13,6 +13,10 @@ Thanks for your interest in contributing! This is a small, single-file static pr
 
 There is no build step. The entire app is one HTML file.
 
+Before structural changes, read [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md);
+[`.opencode/rules.md`](.opencode/rules.md) has the normative code, JavaScript,
+UI and validation rules.
+
 1. **Fork** the repo on GitHub.
 2. **Clone** your fork:
    ```bash
@@ -23,11 +27,14 @@ There is no build step. The entire app is one HTML file.
 
    For some browsers (and to avoid file:// quirks), serve it locally:
    ```bash
-   python -m http.server 8000
+   python tools/serve.py 8000          # correct MIME types; see the note below
+   python tools/serve.py 8000 --bind 0.0.0.0   # only if you need LAN access
    # then open http://localhost:8000
    ```
 
-No npm install, no virtualenv, no dependencies to download. The PDF libraries are loaded from CDN with SRI hashes.
+No npm install, no virtualenv, no dependencies to download. The PDF libraries and the font are vendored under `vendor/` and served from the same origin (see `vendor/README.md` for versions and checksums).
+
+> On Windows, `python -m http.server` reports `.js` as `text/plain`, which makes the browser refuse the Split/Merge worker. `tools/serve.py` sends the correct MIME types, so use it. Opening `index.html` straight from `file://` also blocks Blob workers.
 
 ## Making a change
 
@@ -69,7 +76,7 @@ Your PR description should include:
 
 - **Vanilla JS only** — no frameworks, no build tools, no transpilation. The whole point of this project is that it's one HTML file you can audit and self-host instantly.
 - **Keep `index.html` editable by hand.** No minification, no concatenation steps in the source.
-- **No new runtime dependencies** without discussing in an issue first. If you must add a library, prefer one that loads from CDN with an SRI hash and is small.
+- **No new runtime dependencies** without discussing in an issue first. If you must add a library, vendor it under `vendor/` and record its version, source, license and SHA-256/SHA-384 in `vendor/README.md`. Any file that must be fetched from a third-party origin needs a security review and an explicit CSP change.
 - **Sanitize anything that touches `innerHTML`** — use the existing `esc()` helper or, better, `textContent` / `createElement`.
 - **No tracking, analytics, or telemetry.** Privacy is the entire pitch of this project.
 - **No secrets in the source.** No API keys, no tokens, no third-party services that require accounts.

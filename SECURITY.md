@@ -43,9 +43,9 @@ PDF Studio runs **entirely in the user's browser**. There is no backend, no uplo
 
 ## Hardening already in place
 
-- **Subresource Integrity (SRI)** with SHA-384 hashes on all CDN scripts (`pdf.js`, `pdf-lib`, `jszip`). Tampered libraries will fail to load.
+- **Zero third-party runtime.** Every script and the font are first-party files under `vendor/`, kept with version, source URL, license and SHA-256/SHA-384 in `vendor/README.md`. There is no CDN origin to tamper with, and the CSP references no external host. The vendored `.js` files were verified against the SHA-384 hashes the project used while it still loaded them from a CDN.
 - **Strict security headers** via `netlify.toml`:
-  - `Content-Security-Policy` restricting script/style/connect sources
+  - `Content-Security-Policy` with `default-src 'self'`, `object-src 'none'`, `base-uri 'self'`, `form-action 'none'`, and no third-party origin in `script-src`, `style-src`, `worker-src`, `connect-src` or `font-src`
   - `X-Frame-Options: DENY`
   - `X-Content-Type-Options: nosniff`
   - `Referrer-Policy: strict-origin-when-cross-origin`
@@ -53,9 +53,10 @@ PDF Studio runs **entirely in the user's browser**. There is no backend, no uplo
 - **Filename sanitization** strips path separators, control characters, and Windows-reserved names from every download.
 - **Password fields are cleared** from the DOM immediately after the encrypt/unlock operation completes.
 - **No `localStorage`, `sessionStorage`, `indexedDB`, or cookies.** Nothing about your PDFs persists across reloads.
-- **No analytics, telemetry, or tracking of any kind.** No third-party scripts beyond the PDF libraries themselves (which are SRI-locked).
-- **Magic-byte validation** (`%PDF-`) on every uploaded file in addition to the extension check.
-- **MIT-licensed source** — anyone can audit the entire app in a single 2,200-line `index.html`.
+- **No analytics, telemetry, or tracking of any kind.** There are no third-party scripts at all.
+- **One validation gate for every file**: extension check, size ceiling, `%PDF-` magic bytes within the first 1024 bytes, and a real pdf-lib parse before any tool touches the bytes. Form values are clamped or allowlisted, and page ranges are validated against the document's page count.
+- **Encryption is real.** Protect applies **AES-256** (ISO 32000-2 R6) through `@cantoo/pdf-lib`'s `encrypt()`, with a random 32-byte owner password per save; Unlock decrypts with the supplied password and rebuilds a fresh document so the output carries no `/Encrypt` dictionary. (Upstream `pdf-lib@1.17.1` silently ignored password options, which is why the project switched to the maintained fork.)
+- **MIT-licensed source** — anyone can audit the entire app in a single ~2,300-line `index.html`.
 
 ## Known limitations
 
@@ -69,7 +70,7 @@ The app uses **pdf.js 3.11.174**, which is affected by [CVE-2024-4367](https://n
 
 **Why the impact is limited here:** pdf.js is used only to render small page thumbnails for the visual split UI. There is no cross-user state, no server, no persistent storage. A malicious PDF crafted to exploit this CVE can only affect the current tab of the user who deliberately opened it — and that user already has the file.
 
-**Mitigation:** the SRI hash locks the version against tampering. An upgrade to pdf.js 4.x is planned.
+**Mitigation:** the version is pinned by the checksums in `vendor/README.md` (and was verified against the project's former SHA-384 SRI hash). An upgrade to pdf.js 4.x is planned.
 
 ### CSP `unsafe-inline` and `unsafe-eval`
 
@@ -78,6 +79,14 @@ The Content Security Policy currently allows `'unsafe-inline'` (the app's logic 
 **Why the impact is limited here:** the app processes **only PDF files** as user input. No text input is ever rendered into HTML. The `esc()` helper escapes filenames before they touch any `innerHTML`. There is no realistic XSS vector.
 
 **Mitigation planned:** extract the inline JS into an external `app.js` so `'unsafe-inline'` can be dropped.
+
+### Local development server
+
+`python -m http.server` on Windows reports `.js` as `text/plain`, and some
+browsers then refuse the Split/Merge Blob worker (`importScripts` MIME error).
+That is a local tooling quirk, not a vulnerability, but it makes two tools
+unusable. Use `python tools/serve.py` (which sets correct MIME types), or any
+host that serves `.js` as JavaScript.
 
 ## Security-relevant changes
 

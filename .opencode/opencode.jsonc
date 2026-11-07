@@ -1,0 +1,5 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  // Project rules for agents. Loaded alongside AGENTS.md-style discovery.
+  "instructions": [".opencode/rules.md", "docs/ARCHITECTURE.md"]
+}
