@@ -14,14 +14,14 @@ project advertises. Report findings; only change code when asked.
 Grep for anything that could leave the device or persist data:
 
 ```bash
-grep -rnE "fetch\(|XMLHttpRequest|WebSocket|sendBeacon|navigator\.sendBeacon" index.html
-grep -rnE "localStorage|sessionStorage|indexedDB|document\.cookie" index.html
-grep -rnoE "https?://[^\"' )]+" index.html
+grep -rnE "fetch\(|XMLHttpRequest|WebSocket|sendBeacon|navigator\.sendBeacon" index.html js
+grep -rnE "localStorage|sessionStorage|indexedDB|document\.cookie" index.html js
+grep -rnoE "https?://[^\"' )]+" index.html js assets/css
 ```
 
 Expected: no network API call for user data; no storage API; the only URLs in
-`index.html` are metadata (`canonical`, Open Graph, JSON-LD). Any runtime asset
-must be first-party under `vendor/`.
+`index.html` are metadata (Open Graph, JSON-LD). Any runtime asset must be
+first-party under `vendor/`, `js/` or `assets/`.
 
 ## 2. CSP and headers (`netlify.toml`)
 
@@ -30,8 +30,10 @@ must be first-party under `vendor/`.
 - `object-src 'none'`, `base-uri 'self'`, `form-action 'none'`.
 - `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`,
   `Referrer-Policy`, `Permissions-Policy` present.
-- `'unsafe-inline'`/`'unsafe-eval'` are known, accepted debt because app logic
-  is inline; flag any *additional* relaxation.
+- `'unsafe-inline'`/`'unsafe-eval'` are known, accepted debt: inline
+  `onclick`/`onchange` handlers and `style` attributes still need the former,
+  and pdf.js needs the latter. Application JS is external under `js/`; flag any
+  *additional* relaxation.
 
 ## 3. Supply chain (`vendor/`)
 

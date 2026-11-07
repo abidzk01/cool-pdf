@@ -14,17 +14,25 @@ are normative: if a request conflicts with them, say so before proceeding.
    scope until the maintainer approves it in an issue.
 2. **No build step and no package manager for the app.** No npm/bun/pnpm
    dependency, no bundler, no transpiler, no CSS preprocessor for app code.
-   `index.html` must stay hand-editable and unminified.
-3. **No new runtime dependency without an issue first.** If one is truly
+   Markup, CSS and JS are plain, hand-editable files: `index.html` (shell),
+   `assets/css/*.css` and `js/*.js`.
+3. **Respect the split.** CSS goes in the file that owns the concern
+   (`theme`, `layout`, `components`, `editor`, `responsive`); JS goes in the
+   module that owns it (`core`, `split`, `merge`, `tools`, `editor`, `app`).
+   `responsive.css` stays last; `core.js` stays first; `app.js` stays last.
+   Classic scripts share one global scope, so every top-level name is declared
+   exactly once across all files.
+4. **No new runtime dependency without an issue first.** If one is truly
    needed, vendor it under `vendor/` with version, source URL, license, and
    SHA-256/SHA-384 recorded in `vendor/README.md`; update the CSP only if the
    dependency is genuinely external (prefer first-party).
-4. **One origin.** Runtime assets are first-party. Do not reintroduce CDN
+5. **One origin.** Runtime assets are first-party. Do not reintroduce CDN
    `<script>`/font links; do not loosen the CSP to reach a third-party origin.
-5. **Privacy of input.** Never log, persist, or transmit file names, contents,
+6. **Privacy of input.** Never log, persist, or transmit file names, contents,
    or passwords. Clear password fields from the DOM immediately after use.
-6. **`index.html` is the application.** Tools live inside it, in their own
-   clearly-commented section; do not split logic into `src/` modules.
+7. **Markup stays in `index.html`.** Panels and controls are declared there;
+   behaviour lives in `js/`. Do not move markup into JS string templates where
+   a real element would do.
 
 ---
 
@@ -32,9 +40,12 @@ are normative: if a request conflicts with them, say so before proceeding.
 
 ### General
 
-- Match the surrounding code. This file is dense and consistent: two-space
+- Match the surrounding code. The codebase is dense and consistent: two-space
   indentation, compact one-line statements, section banners such as
   `// ═══ SPLIT ═══` and `/* ── BUTTONS ── */`.
+- Each file opens with `'use strict';` (except `core.js`, which already has it)
+  and keeps its own section banners. Do not add a module wrapper or an IIFE —
+  classic scripts share the global scope on purpose.
 - Prefer the smallest change that fully solves the problem. Do not reformat
   whole files or "fix" unrelated lines in the same change.
 - Keep comments explaining *why*, not *what*. Preserve existing `BUG-n` markers
@@ -191,7 +202,7 @@ Approved only if it is a **build-time, committed artifact** — no CDN JIT scrip
    step exists. No `!important`.
 5. Keep utility order stable (layout → spacing → typography → colour → state)
    so diffs stay reviewable, and extract repeated clusters into a component
-   class in the existing `<style>` block instead of pasting 10 classes again.
+   class in `assets/css/components.css` instead of pasting 10 classes again.
 6. Preserve semantics: a button stays a `<button>`, and Tailwind classes never
    replace required `title`/`aria-label`.
 7. Migrate one tool per commit behind no flag; do not mix two visual systems in

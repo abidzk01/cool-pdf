@@ -24,7 +24,8 @@ straight on the tools: a compact topbar, one line of copy, then the drop zone.
 
 ## Privacy by design
 
-This is a **single static HTML file** plus first-party vendored assets. There is
+This is a **static site**: one HTML shell plus first-party CSS, JavaScript,
+fonts and icons. There is
 no server upload, no telemetry, no analytics, no tracking, no cookies, no
 fingerprinting and no persistent storage. Every PDF you process is handled
 locally by JavaScript in your own browser tab. Close the tab and it is gone.
@@ -38,6 +39,7 @@ and the brand icons are first-party (`vendor/`, `assets/`). See
 | Layer | Choice |
 | --- | --- |
 | App | HTML + CSS + vanilla JavaScript, `'use strict'`, **no framework** |
+| Structure | `index.html` markup shell + `assets/css/*.css` + `js/*.js`, classic scripts in dependency order (no modules, no bundler) |
 | Build | **None.** No npm, no bundler, no `node_modules`, no transpiler |
 | PDF read/render | [pdf.js](https://mozilla.github.io/pdf.js/) `3.11.174` — page counts, thumbnails, page→image |
 | PDF read/write | [@cantoo/pdf-lib](https://www.npmjs.com/package/@cantoo/pdf-lib) `2.11.1` — create, copy, merge, draw, **AES-256 encrypt/decrypt** |
@@ -82,7 +84,7 @@ SHA-256/SHA-384 in [`vendor/README.md`](vendor/README.md).
 
 ### To develop
 
-- A text editor. You are editing one HTML file.
+- A text editor. Markup lives in `index.html`; CSS and JS live in `assets/css/` and `js/`.
 - Optional: Node 18+ if you want to script PDF fixtures for manual testing.
 
 ## Usage
@@ -97,12 +99,36 @@ SHA-256/SHA-384 in [`vendor/README.md`](vendor/README.md).
 
 ```text
 pdf-studio/
-├── index.html                 # The entire application (markup + CSS + JS)
+├── index.html                 # Markup shell (~570 lines): head, topbar, hero,
+│                              # tabs, panels, footer, signature modal
 ├── netlify.toml               # Static publish root + security headers (CSP)
 ├── README.md                  # This file
 ├── CONTRIBUTING.md            # How to contribute, code style summary
 ├── SECURITY.md                # Threat model, hardening, known limitations
 ├── LICENSE                    # MIT
+│
+├── assets/
+│   ├── css/                   # Styles split by concern, loaded in this order:
+│   │   ├── theme.css          #   tokens, font, reset, base
+│   │   ├── layout.css         #   app shell, topbar, hero
+│   │   ├── components.css     #   tabs, cards, drop zones, buttons, toasts, forms
+│   │   ├── editor.css         #   overlay editor + signature modal
+│   │   └── responsive.css     #   media queries (must stay last)
+│   ├── icon-rxpdf-cool.png    # Square app mark used in the topbar
+│   ├── favicon.ico
+│   ├── favicon-32x32.png
+│   ├── favicon-rxpdf-cool.png # Apple touch icon
+│   └── logo-utama-rxpdf-cool.png # Wide lockup (reference artwork)
+│
+├── js/                        # Classic scripts, loaded in this order:
+│   ├── core.js                #   validation, S state, helpers, theme, tabs,
+│   │                          #   drag & drop, downloads, progress, worker
+│   ├── split.js               #   Split
+│   ├── merge.js               #   Merge
+│   ├── tools.js               #   Compress, Images, Watermark, Page Numbers,
+│   │                          #   Protect, Unlock
+│   ├── editor.js              #   Edit + signature pad
+│   └── app.js                 #   init, global listeners
 │
 ├── vendor/                    # First-party runtime dependencies (no CDN)
 │   ├── README.md              # Versions, sources, licenses, checksums
@@ -110,13 +136,6 @@ pdf-studio/
 │   ├── pdf-lib/pdf-lib.min.js # @cantoo/pdf-lib
 │   ├── jszip/jszip.min.js
 │   └── inter/InterVariable.woff2
-│
-├── assets/                    # Brand assets (first-party, no CDN)
-│   ├── icon-rxpdf-cool.png    # Square app mark used in the topbar
-│   ├── favicon.ico
-│   ├── favicon-32x32.png
-│   ├── favicon-rxpdf-cool.png # Apple touch icon
-│   └── logo-utama-rxpdf-cool.png # Wide lockup (reference artwork)
 │
 ├── tools/
 │   └── serve.py               # Local dev server with correct MIME types
@@ -184,7 +203,7 @@ Why does the Compress tool not shrink my scanned PDF?
 ### Rules an agent must follow here
 
 - No backend, no storage, no telemetry, no new third-party origin.
-- No build step; `index.html` stays hand-editable.
+- No build step; the HTML, CSS and JS stay hand-editable.
 - Validate every file through `readPdfFile()` and every value through
   `clampInt()`/`normalizeRange()`.
 - Use `pdfjsLib` for rendering and `PDFLib` for read/write; encryption goes
@@ -210,7 +229,8 @@ Contributions are welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md).
 Quick version:
 
 1. Fork and branch from `master` (`fix/…`, `feature/…`, `docs/…`).
-2. Edit `index.html` directly.
+2. Edit the file that owns the change: `index.html` for markup,
+   `assets/css/` for styles, `js/` for behaviour.
 3. Test with `python tools/serve.py 8000` and run through the affected tool,
    including one edge case.
 4. Open a PR with what changed, why, and how you tested it.

@@ -1,0 +1,63 @@
+/* ── LAYOUT ──────────────────────────────────────────────────────── */
+#app{max-width:1200px;margin:0 auto;padding:0 16px 0}
+
+/* ── TOPBAR ──────────────────────────────────────────────────────── */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:12px 0;margin-bottom:18px;
+  background:var(--bg-flat);
+  border-bottom:1px solid var(--border-s);
+}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand-icon{
+  width:38px;height:38px;border-radius:10px;display:block;
+  box-shadow:var(--shadow);flex-shrink:0;
+}
+.brand-text{font-size:1.2rem;font-weight:800;letter-spacing:-.4px;color:var(--text)}
+.brand-accent{
+  background:linear-gradient(135deg,#f97316,#ef4444);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.topbar-actions{display:flex;align-items:center;gap:10px}
+.privacy-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 12px;border-radius:980px;font-size:.72rem;font-weight:600;
+  color:var(--text-m);background:var(--hover);border:1px solid var(--border-s);
+  white-space:nowrap;
+}
+.theme-group{
+  display:flex;gap:2px;padding:3px;border-radius:980px;
+  background:var(--hover);border:1px solid var(--border-s);
+}
+.theme-btn{
+  padding:6px 11px;border-radius:980px;border:none;
+  background:transparent;color:var(--text-m);font-size:.78rem;font-weight:600;
+  transition:all .2s;
+}
+.theme-btn:hover{background:var(--card);color:var(--text)}
+.theme-btn.active{background:var(--text);color:var(--bg-flat)}
+
+/* ── HERO — compact, informative, never blocks the tools ─────────── */
+.hero{
+  padding:22px 0 20px;margin-bottom:20px;
+  border-bottom:1px solid var(--border-s);
+}
+.hero h1{
+  font-size:clamp(1.5rem,3.2vw,2.1rem);font-weight:800;letter-spacing:-.8px;
+  line-height:1.15;margin-bottom:8px;
+}
+.hero h1 .g1{
+  background:linear-gradient(135deg,var(--accent) 0%,#22d3ee 60%,#2dd4bf 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero p{font-size:.92rem;color:var(--text-m);max-width:720px;line-height:1.6}
+.hero-facts{
+  display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin-top:14px;
+}
+.hero-facts li{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 12px;border-radius:980px;font-size:.73rem;font-weight:600;
+  color:var(--text-m);background:var(--hover);border:1px solid var(--border-s);
+}
+.hero-facts li::before{content:'✓';color:var(--success);font-weight:800}

@@ -11,7 +11,8 @@ Thanks for your interest in contributing! This is a small, single-file static pr
 
 ## Development setup
 
-There is no build step. The entire app is one HTML file.
+There is no build step. Markup lives in `index.html`; styles are split by
+concern under `assets/css/` and behaviour under `js/`.
 
 Before structural changes, read [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md);
 [`.opencode/rules.md`](.opencode/rules.md) has the normative code, JavaScript,
@@ -46,7 +47,9 @@ No npm install, no virtualenv, no dependencies to download. The PDF libraries an
 
 2. **Keep changes focused** — one logical change per PR. Smaller PRs get reviewed faster.
 
-3. **Edit `index.html` directly.** All HTML, CSS, and JavaScript live in this single file.
+3. **Edit the file that owns the change.** Markup in `index.html`, styles in
+   `assets/css/`, behaviour in `js/`. Keep the load order documented in
+   `docs/ARCHITECTURE.md` §4.
 
 4. **Test manually** before pushing:
    - Reload the page in your browser
@@ -74,8 +77,8 @@ Your PR description should include:
 
 ## Code style
 
-- **Vanilla JS only** — no frameworks, no build tools, no transpilation. The whole point of this project is that it's one HTML file you can audit and self-host instantly.
-- **Keep `index.html` editable by hand.** No minification, no concatenation steps in the source.
+- **Vanilla JS only** — no frameworks, no build tools, no transpilation. The whole point of this project is that every file is plain, auditable and self-hostable instantly.
+- **Keep the source editable by hand.** No minification, no concatenation steps, no generated bundles. CSS and JS are split by concern, not bundled.
 - **No new runtime dependencies** without discussing in an issue first. If you must add a library, vendor it under `vendor/` and record its version, source, license and SHA-256/SHA-384 in `vendor/README.md`. Any file that must be fetched from a third-party origin needs a security review and an explicit CSP change.
 - **Sanitize anything that touches `innerHTML`** — use the existing `esc()` helper or, better, `textContent` / `createElement`.
 - **No tracking, analytics, or telemetry.** Privacy is the entire pitch of this project.

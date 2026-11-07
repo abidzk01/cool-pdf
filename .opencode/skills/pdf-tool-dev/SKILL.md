@@ -13,7 +13,8 @@ executable checklist on top of them.
 
 - Everything runs in the browser tab. No upload, no backend, no storage, no
   analytics, no new third-party origin.
-- No build step: the change lives in `index.html` (plus docs), hand-readable.
+- No build step: the change lives in plain files (`index.html` markup,
+  `assets/css/*.css`, `js/*.js`), hand-readable, loaded in the documented order.
 - Every file goes through `readPdfFile()`; every numeric/enumerated value goes
   through `clampInt()` or an allowlist.
 - Libraries: `pdfjsLib` for rendering, `PDFLib` (`@cantoo/pdf-lib`) for

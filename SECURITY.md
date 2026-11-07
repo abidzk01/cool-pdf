@@ -56,7 +56,7 @@ RxPDF Cool runs **entirely in the user's browser**. There is no backend, no uplo
 - **No analytics, telemetry, or tracking of any kind.** There are no third-party scripts at all.
 - **One validation gate for every file**: extension check, size ceiling, `%PDF-` magic bytes within the first 1024 bytes, and a real pdf-lib parse before any tool touches the bytes. Form values are clamped or allowlisted, and page ranges are validated against the document's page count.
 - **Encryption is real.** Protect applies **AES-256** (ISO 32000-2 R6) through `@cantoo/pdf-lib`'s `encrypt()`, with a random 32-byte owner password per save; Unlock decrypts with the supplied password and rebuilds a fresh document so the output carries no `/Encrypt` dictionary. (Upstream `pdf-lib@1.17.1` silently ignored password options, which is why the project switched to the maintained fork.)
-- **MIT-licensed source** — anyone can audit the entire app in a single ~3,200-line `index.html`.
+- **MIT-licensed source** — anyone can audit the entire app: a ~570-line `index.html` shell plus plain CSS in `assets/css/` and JavaScript in `js/`.
 - **Editor stays local.** Signatures are drawn on a canvas, cropped client-side and embedded as PNG; no ink, image or metadata value is stored or transmitted.
 
 ## Known limitations
@@ -75,11 +75,11 @@ The app uses **pdf.js 3.11.174**, which is affected by [CVE-2024-4367](https://n
 
 ### CSP `unsafe-inline` and `unsafe-eval`
 
-The Content Security Policy currently allows `'unsafe-inline'` (the app's logic lives in an inline `<script>` block) and `'unsafe-eval'` (required by some pdf.js code paths).
+The Content Security Policy currently allows `'unsafe-inline'` (the markup still uses inline `onclick`/`onchange` handlers and `style` attributes) and `'unsafe-eval'` (required by some pdf.js code paths). Application JavaScript itself now lives in external files under `js/`, so no executable inline `<script>` block remains except the non-executable JSON-LD data block.
 
 **Why the impact is limited here:** the app processes **only PDF files** as user input. No text input is ever rendered into HTML. The `esc()` helper escapes filenames before they touch any `innerHTML`. There is no realistic XSS vector.
 
-**Mitigation planned:** extract the inline JS into an external `app.js` so `'unsafe-inline'` can be dropped.
+**Mitigation planned:** replace the remaining inline event handlers with delegated listeners so `'unsafe-inline'` can be dropped from `script-src`.
 
 ### Local development server
 

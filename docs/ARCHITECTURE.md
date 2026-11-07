@@ -29,8 +29,9 @@ the security headers (CSP, `X-Frame-Options`, `nosniff`, `Referrer-Policy`,
 1. **Privacy first** — a file must never leave the device, and the page must not
    phone home. All runtime assets are first-party (`vendor/`, `assets/`),
    including fonts and icons.
-2. **Auditable & self-hostable in one move** — the entire app stays readable in
-   one HTML file: no minification of app code, no generated bundle.
+2. **Auditable & self-hostable in one move** — every file stays plain and
+   hand-readable: a small HTML shell, CSS split by concern, classic JS modules;
+   no minification of app code, no generated bundle.
 3. **Straight to the tool** — the page opens on the working UI. There is no
    onboarding screen, no full-viewport marketing hero and no scroll required to
    reach a drop zone; brand and copy sit in a compact topbar and one-line hero.
@@ -44,7 +45,8 @@ the security headers (CSP, `X-Frame-Options`, `nosniff`, `Referrer-Policy`,
 
 ```text
 pdf-studio/
-├── index.html                 # THE application: markup + CSS + JS in one file
+├── index.html                 # Markup shell only (~570 lines): head, topbar, hero,
+│                              # tabs, panels, footer, modal; links CSS and JS
 ├── netlify.toml               # Static publish config + security headers (CSP)
 ├── README.md                  # Entry point: stack, requirements, conventions
 ├── CONTRIBUTING.md            # Contribution workflow + code style summary
@@ -53,12 +55,28 @@ pdf-studio/
 ├── .gitattributes             # LF + byte-exact vendored files
 ├── .gitignore
 │
-├── assets/                    # Brand assets served first-party
+├── assets/                    # First-party static assets
+│   ├── css/                   # Styles split by concern, loaded in this order
+│   │   ├── theme.css          #   font-face, theme tokens, reset, base elements
+│   │   ├── layout.css         #   app shell, topbar, hero
+│   │   ├── components.css     #   tabs, cards, drop zones, buttons, toasts, forms
+│   │   ├── editor.css         #   overlay editor, toolbar, handles, signature modal
+│   │   └── responsive.css     #   media queries (must stay last)
 │   ├── icon-rxpdf-cool.png    # Square app mark used in the topbar
 │   ├── favicon.ico            # Browser tab icon
 │   ├── favicon-32x32.png      # PNG favicon
 │   ├── favicon-rxpdf-cool.png # Apple touch icon
 │   └── logo-utama-rxpdf-cool.png # Wide lockup (reference/export artwork)
+│
+├── js/                        # Classic scripts, loaded in dependency order
+│   ├── core.js                #   validation, S state, helpers, theme, tabs,
+│   │                          #   drag & drop, downloads, progress, worker
+│   ├── split.js               #   Split tool
+│   ├── merge.js               #   Merge tool
+│   ├── tools.js               #   Compress, Images, Watermark, Page Numbers,
+│   │                          #   Protect, Unlock
+│   ├── editor.js              #   Edit tool + signature pad (largest module)
+│   └── app.js                 #   init, global listeners, keyboard shortcuts
 │
 ├── vendor/                    # First-party vendored runtime dependencies
 │   ├── README.md              # Versions, sources, licenses, SHA-256/SHA-384
@@ -97,13 +115,12 @@ assets.
 ```text
 ┌─────────────────────────── Browser tab (single origin) ───────────────────────────┐
 │                                                                                  │
-│  index.html                                                                      │
-│  ├── <head>  meta/SEO, JSON-LD, favicons, 3 local <script>, font preload, <style> │
-│  ├── <body>  .topbar        (brand + privacy badge + theme switch)                │
-│  │           .hero          (one-line pitch + fact chips, no full screen)          │
-│  │           .tabs + #panel-<name> × 8  (the working UI)                          │
-│  │           footer, #toast-container                                             │
-│  └── <script>  all app logic (state, helpers, tools, worker source)               │
+│  index.html  (markup shell)                                                        │
+│  assets/css/*.css  (theme, layout, components, editor, responsive)                 │
+│  js/*.js           (core, split, merge, tools, editor, app)                        │
+│  ├── <head>  meta/SEO, JSON-LD, favicons, vendored libs, font preload, stylesheets │
+│  ├── <body>  .topbar / .hero / .tabs / #panel-<name> × 9 / footer                  │
+│  └── tail    #toast-container + six classic scripts in dependency order            │
 │                                                                                  │
 │  Main thread ── postMessage ──► Blob Worker (created from WORKER_SRC)             │
 │       │                              │ importScripts(vendor/pdf-lib/pdf-lib.min.js)
@@ -123,14 +140,60 @@ same origin. There is no third-party origin in the CSP.
 
 ## 4. `index.html` anatomy
 
-`index.html` is ~3,200 lines, split into four contiguous zones:
+`index.html` is now a **markup shell of ~570 lines**. It contains no application
+CSS and no application JavaScript; both are split by concern and loaded from
+`assets/css/` and `js/`.
 
-| Zone | Approx. lines | Contents |
-| --- | --- | --- |
-| Head | 1–38 | Title, description/keywords, Open Graph, Twitter, favicons, `theme-color`, `robots`, JSON-LD `WebApplication`, local `<script src>` for the three libraries, font preload |
-| Styles | 39–547 | One `<style>` block: `@font-face` for self-hosted Inter, theme custom properties, reset, topbar/brand, compact hero, tool UI (`card`, `drop-zone`, `page-thumb`, `toast`, forms), editor and signature pad, responsive rules |
-| Markup | 549–1060 | `.topbar`, `.hero`, `.tabs`, `#panel-<name>` × 9 (including `panel-edit` with its toolbar/stage/panels), signature modal, footer, `#toast-container` |
-| Application JS | 1062–3197 | `'use strict'` script: local asset URLs, `esc`, validation layer, state, helpers, theme/tabs, drag & drop, downloads, tool sections, editor engine, worker source, init |
+| Zone | Contents |
+| --- | --- |
+| Head | Title, description/keywords, Open Graph, Twitter, favicons, `theme-color`, `robots`, JSON-LD `WebApplication`, the three vendored `<script src>`, font preload, the five stylesheets |
+| Body | `.topbar`, `.hero`, `.tabs`, `#panel-<name>` × 9 (including `panel-edit` with toolbar/stage/panels), signature modal, footer |
+| Tail | `#toast-container` and the six application scripts in dependency order |
+
+### Load order and scope
+
+All scripts are **classic scripts**, not ES modules, so they share one global
+scope and run in this order:
+
+```text
+core.js → split.js → merge.js → tools.js → editor.js → app.js
+```
+
+- `core.js` must stay first: it declares `S`, `G`, `esc`, `LIMITS`, the
+  validation helpers, progress, downloads and the Blob worker.
+- `app.js` must stay last: it runs `setTheme`, `onSplitModeChange`, installs the
+  editor listeners and the keyboard shortcuts.
+- Every other file only defines functions or constants; it does not call code
+  from a file loaded after it. Anything may call anything at runtime.
+- Top-level `const`/`let` are shared through the global lexical environment; a
+  name must be declared **once**. Do not duplicate a declaration across files.
+- Inline `onclick` handlers still resolve globals, which is why the files stay
+  classic scripts and why the CSP keeps `'unsafe-inline'` for scripts.
+
+Stylesheets load in this order and the order matters:
+
+```text
+theme.css → layout.css → components.css → editor.css → responsive.css
+```
+
+`responsive.css` must stay last so its media queries win over base rules.
+`theme.css` declares the design tokens that every other file consumes.
+
+### Where new code goes
+
+| Change | File |
+| --- | --- |
+| New design token, reset, base element | `assets/css/theme.css` |
+| Topbar/hero/app-shell layout, media queries | `assets/css/layout.css` / `assets/css/responsive.css` |
+| Shared UI (cards, tabs, drop zones, buttons, toasts, forms) | `assets/css/components.css` |
+| Editor and signature pad UI | `assets/css/editor.css` |
+| State, validation, a shared helper, theme/tabs/downloads | `js/core.js` |
+| Split | `js/split.js` |
+| Merge | `js/merge.js` |
+| Compress / Images / Watermark / Page Numbers / Protect / Unlock | `js/tools.js` |
+| Edit tool and signature pad | `js/editor.js` |
+| Init, global listeners | `js/app.js` |
+| New tool with its own substantial UI | new `js/<tool>.js`, added to `index.html` **before** `app.js` |
 
 ### Markup conventions
 
@@ -410,8 +473,9 @@ operations and metadata are not part of the history — the Pages panel says so.
 
 ## 7. Security model (implemented)
 
-- **First-party runtime**: all scripts and the font are served from `vendor/`.
-  The CSP has no third-party origin; `default-src 'self'`.
+- **First-party runtime**: all scripts, styles and the font are served from
+  `assets/`, `js/` and `vendor/`. The CSP has no third-party origin;
+  `default-src 'self'`.
 - **No storage, no cookies, no telemetry.** Nothing survives a reload.
 - **XSS containment**: `esc()` on every interpolation of user-controlled data;
   filenames additionally pass `safeName()` before becoming download names.
@@ -462,7 +526,7 @@ Practical guidance: prefer the Split tool's "one archive" modes over
 | 5 | Page numbers | Horizontal centring uses an estimated glyph width (`fontSize * 0.3/0.6 * length`) instead of measured text width | Off-centre numbers on wide glyph runs |
 | 6 | Unlock | Rebuilding via `copyPages` drops document-level structures (outlines, named destinations, some form data) | Lossy unlock |
 | 7 | pdf.js | 3.11.174 is affected by CVE-2024-4367; upgrade requires ES-module restructuring | Documented, accepted risk |
-| 8 | CSP | `'unsafe-inline'`/`'unsafe-eval'` required while app JS stays inline | Weaker XSS posture than ideal |
+| 8 | CSP | `'unsafe-inline'`/`'unsafe-eval'` still required by inline event handlers, inline `style` attributes and pdf.js eval paths | Weaker XSS posture than ideal |
 | 9 | Accessibility | Tabs have no `role`/`aria-selected`; toasts and progress are not `aria-live`; icon buttons rely on `title` only | Screen-reader/keyboard gaps |
 | 10 | Dead code | `renderThumb` computes an unused `vp` with a precedence bug; `S.pageBuffers` is unused; the `.add-cut-zone` styles are unused | Confusing, maintenance noise |
 | 11 | Testing | No automated tests, no CI, no lint config — verification is the manual matrix in `CONTRIBUTING.md` | Regressions rely on reviewers |

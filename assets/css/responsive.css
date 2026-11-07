@@ -1,0 +1,22 @@
+@media(max-width:640px){
+  #app{padding:0 12px}
+  .topbar{flex-wrap:wrap;gap:8px;padding:10px 0}
+  .brand-text{font-size:1.05rem}
+  .brand-icon{width:32px;height:32px}
+  .privacy-badge{display:none}
+  .hero{padding:16px 0 14px;margin-bottom:16px}
+  .hero p{font-size:.86rem}
+  .hero-facts{margin-top:10px}
+  .card{padding:18px 14px}
+  .tabs{padding:8px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab-btn{flex:0 0 auto;padding:7px 12px;font-size:.78rem}
+  .page-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}
+  .page-thumb{padding:8px}
+  .parts-actions{width:100%}
+  .editor-toolbar,.editor-topbar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .editor-toolbar::-webkit-scrollbar,.editor-topbar::-webkit-scrollbar{display:none}
+  .editor-toolbar>*,.editor-topbar>*{flex:0 0 auto}
+  .editor-stage{padding:8px;max-height:60vh}
+  .editor-props input[type=range]{width:64px}
+}
