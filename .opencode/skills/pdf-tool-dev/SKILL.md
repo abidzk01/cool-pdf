@@ -1,6 +1,6 @@
 ---
 name: PDF Tool Development
-description: Add a new client-side PDF tool to PDF Studio, or change the Split, Merge, Compress, Images, Watermark, Page Numbers, Protect or Unlock tool. Use when the task touches index.html, the Blob worker, validation, downloads or progress in this repo.
+description: Add a new client-side PDF tool to RxPDF Cool, or change the Split, Merge, Compress, Images, Watermark, Page Numbers, Protect or Unlock tool. Use when the task touches index.html, the Blob worker, validation, downloads or progress in this repo.
 ---
 
 # PDF Tool Development
@@ -39,8 +39,9 @@ executable checklist on top of them.
 7. **Heavy work.** If a transform can exceed ~1 s, add a branch to `WORKER_SRC`
    and call it through `runWorkerTask()`, passing transferables and
    `PDFLibSrc: PDFLIB_URL` (absolute — required inside the Blob worker).
-8. **Copy.** Update the bento grid, JSON-LD `featureList`, meta description and
-   `README.md` if the tool is new or renamed.
+8. **Copy.** Add the tool to `.tabs`, update the JSON-LD `featureList` and meta
+   description, and mention it in `README.md` if it is new or renamed. Do not
+   reintroduce a separate landing screen.
 9. **Docs.** Update `docs/ARCHITECTURE.md` §6.4 (pipelines), §9 (gaps) and §11
    (verification matrix).
 

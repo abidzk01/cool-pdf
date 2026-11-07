@@ -1,11 +1,12 @@
-# PDF Studio
+# RxPDF Cool
 
 A free, open-source, **100% client-side PDF toolkit**. Eight PDF tools that run
-entirely in your browser — your files never leave your device.
+entirely in your browser — your files never leave your device. The page opens
+straight on the tools: a compact topbar, one line of copy, then the drop zone.
 
-- **Live demo:** <https://madebybalaji.com/pdfsnip/>
 - **Architecture reference:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - **Security policy & threat model:** [`SECURITY.md`](SECURITY.md)
+- **Brand assets:** [`assets/`](assets/) (app icon, favicons)
 
 ## Features
 
@@ -28,8 +29,8 @@ fingerprinting and no persistent storage. Every PDF you process is handled
 locally by JavaScript in your own browser tab. Close the tab and it is gone.
 
 The Content Security Policy has **no third-party origin** — even the Inter font
-is self-hosted under `vendor/`. See [`SECURITY.md`](SECURITY.md) for the full
-threat model and hardening details.
+and the brand icons are first-party (`vendor/`, `assets/`). See
+[`SECURITY.md`](SECURITY.md) for the full threat model and hardening details.
 
 ## Tech stack
 
@@ -41,6 +42,7 @@ threat model and hardening details.
 | PDF read/write | [@cantoo/pdf-lib](https://www.npmjs.com/package/@cantoo/pdf-lib) `2.11.1` — create, copy, merge, draw, **AES-256 encrypt/decrypt** |
 | ZIP | [JSZip](https://stuk.github.io/jszip/) `3.10.1` |
 | Font | [Inter](https://rsms.me/inter/) variable, self-hosted WOFF2 |
+| Brand | `assets/` — square app icon, `favicon.ico`, 32×32 PNG, Apple touch icon |
 | Concurrency | One Blob Worker (from an inline source string) for Split and Merge |
 | Hosting | Any static host; `netlify.toml` ships the security headers (CSP, `X-Frame-Options`, `nosniff`, …) |
 
@@ -84,10 +86,11 @@ SHA-256/SHA-384 in [`vendor/README.md`](vendor/README.md).
 
 ## Usage
 
-1. Open the page and pick a tool from the tab bar (or from the landing grid).
-2. Drop a PDF on the dashed zone, or click to browse.
-3. Adjust the tool's options, then press the primary action button.
-4. The result downloads immediately — nothing is uploaded and nothing is kept.
+1. Open the page — the tools are already on screen, no intro to scroll past.
+2. Pick a tool from the tab bar, drop a PDF on the dashed zone (or click to
+   browse), and adjust its options.
+3. Press the primary action button. The result downloads immediately — nothing
+   is uploaded and nothing is kept.
 
 ## Project structure
 
@@ -106,6 +109,13 @@ pdf-studio/
 │   ├── pdf-lib/pdf-lib.min.js # @cantoo/pdf-lib
 │   ├── jszip/jszip.min.js
 │   └── inter/InterVariable.woff2
+│
+├── assets/                    # Brand assets (first-party, no CDN)
+│   ├── icon-rxpdf-cool.png    # Square app mark used in the topbar
+│   ├── favicon.ico
+│   ├── favicon-32x32.png
+│   ├── favicon-rxpdf-cool.png # Apple touch icon
+│   └── logo-utama-rxpdf-cool.png # Wide lockup (reference artwork)
 │
 ├── tools/
 │   └── serve.py               # Local dev server with correct MIME types
@@ -128,7 +138,7 @@ pdf-studio/
 | DOM ids | `<prefix>-<tab>` / `<prefix>-<action>` | `panel-split`, `dz-merge`, `fi-protect`, `pw-compress`, `pf-split`, `btn-merge`, `fg-range`, `tc-0`, `pname-2` |
 | Functions | verb-first camelCase | `loadSplitFile`, `startMerge`, `renderPageGrid`, `clearSplit`, `suggestCutHalf`, `toggleDelete` |
 | State | one `S` object, camelCase keys | `S.splitFile`, `S.pageOrder`, `S.mergeFiles`, `S.cuts` |
-| CSS classes | kebab-case, component prefix | `hl-nav`, `bt-card`, `mi-name`, `dz-icon`, `rv-up`, state classes `.active`/`.selected`/`.deleted`/`.show` |
+| CSS classes | kebab-case, named by component | `topbar`, `brand-text`, `brand-accent`, `hero-facts`, `theme-group`, `dz-icon`, `mi-name`, state classes `.active`/`.selected`/`.deleted`/`.show` |
 | Data attributes | `data-*`, lowercase | `data-orig`, `data-pos`, `data-idx`, `data-wd` |
 | Commits / branches | `Prefix: summary`; `fix/`, `feature/`, `docs/`, `refactor/` | `Fix: handle encrypted input in Unlock` |
 

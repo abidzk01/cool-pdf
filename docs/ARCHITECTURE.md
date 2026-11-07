@@ -1,4 +1,4 @@
-# PDF Studio — Architecture
+# RxPDF Cool — Architecture
 
 > Deep-dive reference for how this project is built, how a PDF actually flows
 > through it, and where the sharp edges are. Written for contributors and for
@@ -10,7 +10,7 @@
 
 ## 1. What this project is
 
-PDF Studio ("PDF Snip") is a **single-page, 100% client-side PDF toolkit**. It
+RxPDF Cool is a **single-page, 100% client-side PDF toolkit**. It
 ships eight tools — Split, Merge, Compress, PDF→Images, Watermark, Page
 Numbers, Password Protect, Unlock — and every byte of processing happens in the
 user's browser tab. There is:
@@ -27,11 +27,15 @@ the security headers (CSP, `X-Frame-Options`, `nosniff`, `Referrer-Policy`,
 ### Design principles (in priority order)
 
 1. **Privacy first** — a file must never leave the device, and the page must not
-   phone home. All runtime assets are first-party (`vendor/`), including fonts.
+   phone home. All runtime assets are first-party (`vendor/`, `assets/`),
+   including fonts and icons.
 2. **Auditable & self-hostable in one move** — the entire app stays readable in
    one HTML file: no minification of app code, no generated bundle.
-3. **Zero install** — clone and open. No toolchain for the app itself.
-4. **Graceful failure** — corrupt/encrypted/wrong input produces a toast, never
+3. **Straight to the tool** — the page opens on the working UI. There is no
+   onboarding screen, no full-viewport marketing hero and no scroll required to
+   reach a drop zone; brand and copy sit in a compact topbar and one-line hero.
+4. **Zero install** — clone and open. No toolchain for the app itself.
+5. **Graceful failure** — corrupt/encrypted/wrong input produces a toast, never
    a blank screen or a silent no-op.
 
 ---
@@ -46,7 +50,15 @@ pdf-studio/
 ├── CONTRIBUTING.md            # Contribution workflow + code style summary
 ├── SECURITY.md                # Threat model, hardening, known limitations
 ├── LICENSE                    # MIT
+├── .gitattributes             # LF + byte-exact vendored files
 ├── .gitignore
+│
+├── assets/                    # Brand assets served first-party
+│   ├── icon-rxpdf-cool.png    # Square app mark used in the topbar
+│   ├── favicon.ico            # Browser tab icon
+│   ├── favicon-32x32.png      # PNG favicon
+│   ├── favicon-rxpdf-cool.png # Apple touch icon
+│   └── logo-utama-rxpdf-cool.png # Wide lockup (reference/export artwork)
 │
 ├── vendor/                    # First-party vendored runtime dependencies
 │   ├── README.md              # Versions, sources, licenses, SHA-256/SHA-384
@@ -86,10 +98,11 @@ assets.
 ┌─────────────────────────── Browser tab (single origin) ───────────────────────────┐
 │                                                                                  │
 │  index.html                                                                      │
-│  ├── <head>  meta/SEO, JSON-LD, 3 local <script>, 1 font preload, <style>         │
-│  ├── <body>  #hero-landing  (marketing surface)                                   │
-│  │           #tool-app      (the actual tool: tabs + 8 panels)                    │
-│  │           #toast-container                                                     │
+│  ├── <head>  meta/SEO, JSON-LD, favicons, 3 local <script>, font preload, <style> │
+│  ├── <body>  .topbar        (brand + privacy badge + theme switch)                │
+│  │           .hero          (one-line pitch + fact chips, no full screen)          │
+│  │           .tabs + #panel-<name> × 8  (the working UI)                          │
+│  │           footer, #toast-container                                             │
 │  └── <script>  all app logic (state, helpers, tools, worker source)               │
 │                                                                                  │
 │  Main thread ── postMessage ──► Blob Worker (created from WORKER_SRC)             │
@@ -110,14 +123,14 @@ same origin. There is no third-party origin in the CSP.
 
 ## 4. `index.html` anatomy
 
-`index.html` is ~2,300 lines, split into four contiguous zones:
+`index.html` is ~1,835 lines, split into four contiguous zones:
 
 | Zone | Approx. lines | Contents |
 | --- | --- | --- |
-| Head | 1–46 | Title, description/keywords, Open Graph, Twitter, canonical, `robots`, JSON-LD `WebApplication`, local `<script src>` for the three libraries, font preload |
-| Styles | 39–719 | One `<style>` block: `@font-face` for self-hosted Inter, theme custom properties, reset, landing (`hl-*`), bento (`bt-*`), tool UI (`card`, `drop-zone`, `page-thumb`, `toast`, forms), responsive and animation utilities |
-| Markup | 721–1225 | `#hero-landing` (nav, hero copy, bento grid, scroll cue), `#tool-app` (compact header, `.tabs`, `#panel-<name>` × 8, footer), `#toast-container` |
-| Application JS | 1227–end | `'use strict'` script: local asset URLs, `esc`, validation layer, state, helpers, theme/tabs, drag & drop, downloads, one section per tool, worker source, init |
+| Head | 1–38 | Title, description/keywords, Open Graph, Twitter, favicons, `theme-color`, `robots`, JSON-LD `WebApplication`, local `<script src>` for the three libraries, font preload |
+| Styles | 39–432 | One `<style>` block: `@font-face` for self-hosted Inter, theme custom properties, reset, topbar/brand, compact hero, tool UI (`card`, `drop-zone`, `page-thumb`, `toast`, forms), responsive rules |
+| Markup | 434–801 | `.topbar` (brand image + wordmark, privacy badge, theme group), `.hero` (h1 + paragraph + fact chips), `.tabs`, `#panel-<name>` × 8, footer, `#toast-container` |
+| Application JS | 803–1832 | `'use strict'` script: local asset URLs, `esc`, validation layer, state, helpers, theme/tabs, drag & drop, downloads, one section per tool, worker source, init |
 
 ### Markup conventions
 
@@ -201,12 +214,22 @@ drawn onto `<canvas>` so re-renders are cheap after the first render.
 
 `data-theme="light|dark"` on `<html>` selects between two sets of CSS custom
 properties (`:root` and `[data-theme="dark"]`). `setTheme()` flips the
-attribute; because the page has two theme button groups (`btnLight/btnDark` and
-`btnLightInner/btnDarkInner`), the bottom of the script rebinds `window.setTheme`
-to keep all four buttons in sync. Components only ever reference variables
+attribute and toggles the `.active` state on the single theme group
+(`#btnLight` / `#btnDark`). Components only ever reference variables
 (`var(--card)`, `var(--accent)`), never raw colours.
 
-### 5.6 Progress and concurrency
+### 5.6 Branding
+
+The topbar mark is `assets/icon-rxpdf-cool.png` (square app icon) next to a CSS
+wordmark: `Rx` in the text colour, `PDF` in an orange→red gradient
+(`.brand-accent`) and `Cool` in the text colour. Favicons come from `assets/`
+(`favicon.ico`, `favicon-32x32.png`, `favicon-rxpdf-cool.png` for Apple touch).
+The wide `assets/logo-utama-rxpdf-cool.png` is reference artwork: it has a
+baked-in "LOGO UTAMA" label and a dark canvas, so it is not used in the layout.
+Colour is theme-agnostic for these assets; do not hard-code a dark background
+behind them.
+
+### 5.7 Progress and concurrency
 
 Every tool shares one progress idiom: `showProgress('<tab>', true)` reveals
 `#pw-<tab>`, and `setProgress('<tab>', cur, tot)` updates the bar, the counter,
@@ -378,9 +401,10 @@ Practical guidance: prefer the Split tool's "one archive" modes over
 | 7 | pdf.js | 3.11.174 is affected by CVE-2024-4367; upgrade requires ES-module restructuring | Documented, accepted risk |
 | 8 | CSP | `'unsafe-inline'`/`'unsafe-eval'` required while app JS stays inline | Weaker XSS posture than ideal |
 | 9 | Accessibility | Tabs have no `role`/`aria-selected`; toasts and progress are not `aria-live`; icon buttons rely on `title` only | Screen-reader/keyboard gaps |
-| 10 | Dead code | `renderThumb` computes an unused `vp` with a precedence bug; `S.pageBuffers` and `_origSetTheme` are unused; `switchTab` contains a superseded first matching pass | Confusing, maintenance noise |
+| 10 | Dead code | `renderThumb` computes an unused `vp` with a precedence bug; `S.pageBuffers` is unused; the `.add-cut-zone` styles are unused | Confusing, maintenance noise |
 | 11 | Testing | No automated tests, no CI, no lint config — verification is the manual matrix in `CONTRIBUTING.md` | Regressions rely on reviewers |
 | 12 | Local dev | On Windows, `python -m http.server` serves `.js` as `text/plain`, breaking worker `importScripts` | Use `tools/serve.py` |
+| 13 | Brand assets | Only raster PNGs are shipped; the wide lockup carries a baked-in "LOGO UTAMA" label, so the header uses the square icon plus a CSS wordmark (two sources of truth for the name) | Minor; needs an SVG/transparent mark to simplify |
 
 ---
 
@@ -405,8 +429,9 @@ Practical guidance: prefer the Split tool's "one archive" modes over
 6. **Non-blocking?** If the transform can exceed ~1 s on large files, run it in
    the Blob worker: add a branch in `WORKER_SRC` and a message type, and remember
    to pass `PDFLibSrc: PDFLIB_URL`.
-7. **Copy**: mention the new tool in `#hero-landing`'s bento grid, the JSON-LD
-   `featureList`, the meta description/keywords, and `README.md`.
+7. **Copy**: add the tool to `.tabs`, to the hero fact chips if it changes a
+   headline claim, and to the JSON-LD `featureList`, meta description and
+   `README.md`. Do not reintroduce a separate landing screen.
 8. **Docs**: update this file's §6.4 table and the QA matrix below.
 
 ---
@@ -426,7 +451,7 @@ Practical guidance: prefer the Split tool's "one archive" modes over
 | Protect | Output re-opens **only** with the password; wrong confirm password blocked; fields cleared afterwards |
 | Unlock | Encrypted input + correct password → output opens with **no** password prompt; wrong password shows a clear error |
 | Validation | `.txt` renamed to `.pdf`, empty file, truncated PDF, >1.5 GB file, encrypted file in each tool |
-| Theme | Light/dark toggle keeps all four buttons in sync |
+| Theme | Light/dark toggle swaps the palette and keeps the two theme buttons in sync |
 | Concurrency | Buttons disable during a run and re-enable after (success and failure) |
 
 ---
@@ -440,9 +465,10 @@ Practical guidance: prefer the Split tool's "one archive" modes over
   `clear*`, `suggestCut*`, `toggle*`, `update*`.
 - **State keys**: camelCase; `Set` for page-index collections; one-shot holders
   named `<tool>File`.
-- **CSS classes**: kebab-case; component prefixes `hl-` (hero landing), `bt-`
-  (bento), `mi-` (merge item), `dz-`, `rv-` (scroll reveal); state classes
-  `.active`, `.selected`, `.deleted`, `.show`, `.dragover`, `.dragging`.
+- **CSS classes**: kebab-case; component names `topbar`, `brand`, `hero`,
+  `theme-group`, plus legacy per-tool prefixes `mi-` (merge item) and `dz-`;
+  state classes `.active`, `.selected`, `.deleted`, `.show`, `.dragover`,
+  `.dragging`.
 - **Data attributes**: `data-orig`, `data-pos`, `data-idx`, `data-wd`.
 - **Commits**: `Add:`, `Fix:`, `Update:`, `Remove:`, `Docs:`, `Refactor:`.
 

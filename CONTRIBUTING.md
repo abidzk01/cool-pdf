@@ -1,4 +1,4 @@
-# Contributing to PDF Studio
+# Contributing to RxPDF Cool
 
 Thanks for your interest in contributing! This is a small, single-file static project — issues, ideas, and pull requests are all welcome.
 

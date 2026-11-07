@@ -1,4 +1,4 @@
-# PDF Studio — Agent Rules
+# RxPDF Cool — Agent Rules
 
 Project instructions for any agent (or human) changing this repository.
 Read `docs/ARCHITECTURE.md` first for how the app is put together. These rules
@@ -51,9 +51,9 @@ are normative: if a request conflicts with them, say so before proceeding.
   `render<Name>`, `clear<Name>`, `toggle<Name>`, `update<Name>`.
 - State keys: camelCase; `Set` for page-index collections; one-shot holders are
   `<tool>File`.
-- CSS classes: kebab-case, prefixed by component (`hl-`, `bt-`, `mi-`, `dz-`,
-  `rv-`); state classes `.active`, `.selected`, `.deleted`, `.show`,
-  `.dragover`, `.dragging`.
+- CSS classes: kebab-case, named by component (`topbar`, `brand`, `hero`,
+  `theme-group`) or legacy tool prefix (`mi-`, `dz-`); state classes `.active`,
+  `.selected`, `.deleted`, `.show`, `.dragover`, `.dragging`.
 
 ### HTML
 
@@ -132,13 +132,28 @@ are normative: if a request conflicts with them, say so before proceeding.
 - The project does **not** use Tailwind, Bootstrap, or any CSS framework. Do not
   add utility classes from another framework, and do not add a framework "while
   you're in there".
-- Layout uses the existing primitives: `#app` container, `.card`, `.form-row`
-  (flex, wraps), `.page-grid` (auto-fill grid), responsive `@media` blocks at
-  `600px`/`640px`/`860px`/`480px`.
+- Layout uses the existing primitives: `#app` container, `.topbar`, `.hero`,
+  `.tabs`, `.card`, `.form-row` (flex, wraps), `.page-grid` (auto-fill grid),
+  responsive `@media` blocks at `640px` (and the tool-specific ones already
+  present).
 - Radius, spacing and typography follow what is already there: cards `16px`,
   controls `11px` or pill `980px`, muted text `var(--text-m)`, sizes in `rem`.
-- Motion: keep the `rv-*` scroll-reveal and entrance animations consistent;
-  new elements may reuse `.rv`/`.stg` but must not delay interaction.
+- Motion is minimal and must never delay the tool: the page has no
+  entrance/scroll-reveal gate. Animate property changes (`transform`, `opacity`)
+  only; do not add an animation that hides the drop zone on first paint.
+
+### Branding
+
+- The product name is **RxPDF Cool**, written exactly like that (`Rx` + `PDF` +
+  `Cool`, `.brand-text` / `.brand-accent` in the topbar).
+- Header mark: `assets/icon-rxpdf-cool.png`; favicons: `assets/favicon.ico`,
+  `assets/favicon-32x32.png`, `assets/favicon-rxpdf-cool.png` (Apple touch).
+  Never inline a third-party logo or emoji as the brand mark.
+- Keep the page **straight to the tool**: a compact `.topbar`, a one-paragraph
+  `.hero` with fact chips, then `.tabs`. Do not reintroduce a full-viewport
+  landing screen, a bento marketing grid, or a scroll-to-start cue.
+- Copy claims must stay true: AES-256 (not AES-128/RC4), no uploads, no
+  accounts, and no file-size claim beyond `LIMITS.maxBytes`.
 
 ### If Tailwind is ever introduced (rule for that day)
 

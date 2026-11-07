@@ -1,6 +1,6 @@
 # Security Policy
 
-PDF Studio is a privacy-first, fully client-side tool. This document explains how the project handles security and how to report issues.
+RxPDF Cool is a privacy-first, fully client-side tool. This document explains how the project handles security and how to report issues.
 
 ## Reporting a vulnerability
 
@@ -8,8 +8,8 @@ PDF Studio is a privacy-first, fully client-side tool. This document explains ho
 
 Instead, report privately via either:
 
-- GitHub's [private security advisory](https://github.com/mailtobalajiraghavan/pdf-studio/security/advisories/new) (preferred)
-- Email the maintainer directly through the contact link on [madebybalaji.com](https://madebybalaji.com)
+- GitHub's [private security advisory](https://github.com/abidzk01/cool-pdf/security/advisories/new) (preferred)
+- Open a minimal issue asking for a private channel, without disclosing the details
 
 Please include:
 
@@ -22,7 +22,7 @@ You can expect an initial acknowledgement within a few days. Critical issues wil
 
 ## Threat model
 
-PDF Studio runs **entirely in the user's browser**. There is no backend, no upload, no account, no persistent storage, no shared state between users. This shapes what's in scope and what isn't:
+RxPDF Cool runs **entirely in the user's browser**. There is no backend, no upload, no account, no persistent storage, no shared state between users. This shapes what's in scope and what isn't:
 
 ### In scope
 
@@ -56,7 +56,7 @@ PDF Studio runs **entirely in the user's browser**. There is no backend, no uplo
 - **No analytics, telemetry, or tracking of any kind.** There are no third-party scripts at all.
 - **One validation gate for every file**: extension check, size ceiling, `%PDF-` magic bytes within the first 1024 bytes, and a real pdf-lib parse before any tool touches the bytes. Form values are clamped or allowlisted, and page ranges are validated against the document's page count.
 - **Encryption is real.** Protect applies **AES-256** (ISO 32000-2 R6) through `@cantoo/pdf-lib`'s `encrypt()`, with a random 32-byte owner password per save; Unlock decrypts with the supplied password and rebuilds a fresh document so the output carries no `/Encrypt` dictionary. (Upstream `pdf-lib@1.17.1` silently ignored password options, which is why the project switched to the maintained fork.)
-- **MIT-licensed source** — anyone can audit the entire app in a single ~2,300-line `index.html`.
+- **MIT-licensed source** — anyone can audit the entire app in a single ~1,830-line `index.html`.
 
 ## Known limitations
 
@@ -90,7 +90,7 @@ host that serves `.js` as JavaScript.
 
 ## Security-relevant changes
 
-Material security changes are noted in commit messages and, for any disclosed CVE, in this document. For a full audit trail, see the [git log](https://github.com/mailtobalajiraghavan/pdf-studio/commits/master).
+Material security changes are noted in commit messages and, for any disclosed CVE, in this document. For a full audit trail, see the [git log](https://github.com/abidzk01/cool-pdf/commits/master).
 
 ## Disclosure policy
 
@@ -98,4 +98,4 @@ Material security changes are noted in commit messages and, for any disclosed CV
 - **No bug bounty:** this is an unpaid side project. A thank-you and credit are all I can offer.
 - **No legal action:** good-faith security research is welcome and appreciated.
 
-Thanks for helping keep PDF Studio safe.
+Thanks for helping keep RxPDF Cool safe.

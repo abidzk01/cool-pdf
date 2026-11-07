@@ -1,4 +1,4 @@
-# Pre-commit checklist — PDF Studio change
+# Pre-commit checklist — RxPDF Cool change
 
 Copy this into the PR description and tick what you verified.
 

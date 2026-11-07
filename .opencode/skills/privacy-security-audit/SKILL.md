@@ -1,6 +1,6 @@
 ---
 name: Privacy and Security Audit
-description: Audit PDF Studio for privacy, security, CSP, validation and supply-chain regressions before a release or after a dependency change. Use when reviewing index.html, netlify.toml, vendor/, SECURITY.md or any change that touches file intake, encryption, or external origins.
+description: Audit RxPDF Cool for privacy, security, CSP, validation and supply-chain regressions before a release or after a dependency change. Use when reviewing index.html, netlify.toml, vendor/, SECURITY.md or any change that touches file intake, encryption, or external origins.
 ---
 
 # Privacy and Security Audit
