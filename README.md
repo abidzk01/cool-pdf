@@ -27,9 +27,11 @@ straight on the tools: a compact topbar, one line of copy, then the drop zone.
 
 This is a **static site**: one HTML shell plus first-party CSS, JavaScript,
 fonts and icons. There is
-no server upload, no telemetry, no analytics, no tracking, no cookies, no
-fingerprinting and no persistent storage. Every PDF you process is handled
-locally by JavaScript in your own browser tab. Close the tab and it is gone.
+no server upload, no telemetry, no analytics, no tracking, no cookies and no
+fingerprinting. Your documents are never stored: the only value saved locally is
+your language choice (`localStorage["rxpdf.lang"]`). Every PDF you process is
+handled locally by JavaScript in your own browser tab. Close the tab and it is
+gone.
 
 The Content Security Policy has **no third-party origin** — even the Inter font
 and the brand icons are first-party (`vendor/`, `assets/`). See
@@ -47,7 +49,7 @@ and the brand icons are first-party (`vendor/`, `assets/`). See
 | ZIP | [JSZip](https://stuk.github.io/jszip/) `3.10.1` |
 | Font | [Inter](https://rsms.me/inter/) variable, self-hosted WOFF2 |
 | Brand | `assets/` — square app icon, `favicon.ico`, 32×32 PNG, Apple touch icon |
-| i18n | `js/i18n-data.js` (English→Indonesian strings) + `js/i18n.js` (`t()`, `data-i18n`, language switch); no storage, preference carried in `?lang=` |
+| i18n | `js/i18n-data.js` (English→Indonesian strings) + `js/i18n.js` (`t()`, `data-i18n`, language switch); the choice is saved in `localStorage["rxpdf.lang"]`, `?lang=` still wins |
 | Concurrency | One Blob Worker (from an inline source string) for Split and Merge |
 | Hosting | Any static host; `netlify.toml` ships the security headers (CSP, `X-Frame-Options`, `nosniff`, …) |
 
@@ -97,9 +99,9 @@ SHA-256/SHA-384 in [`vendor/README.md`](vendor/README.md).
 3. Press the primary action button. The result downloads immediately — nothing
    is uploaded and nothing is kept.
 
-Use **EN / ID** in the topbar to switch language. The choice is kept in the URL
-(`?lang=id`) rather than storage; without a parameter the browser language
-decides. The topbar also links to the support page
+Use **EN / ID** in the topbar to switch language. The choice is saved in
+`localStorage["rxpdf.lang"]`, so the next visit opens in the same language; a
+`?lang=id` link still overrides it. The topbar also links to the support page
 (<https://teer.id/rxdiag>) and the footer links to
 <https://rxdiag.my.id>.
 
@@ -148,7 +150,14 @@ pdf-studio/
 │   └── inter/InterVariable.woff2
 │
 ├── tools/
-│   └── serve.py               # Local dev server with correct MIME types
+│   ├── serve.py               # Local dev server with correct MIME types
+│   ├── check-i18n.js          # i18n coverage check
+│   └── stamp-assets.js        # Adds ?v=<hash> cache busters to index.html
+│
+├── deploy/
+│   ├── README.md              # VPS cache/deploy checklist
+│   ├── nginx.conf.example
+│   └── apache.htaccess.example
 │
 ├── docs/
 │   └── ARCHITECTURE.md        # How the app and each PDF pipeline works
@@ -219,9 +228,11 @@ Why does the Compress tool not shrink my scanned PDF?
 - Use `pdfjsLib` for rendering and `PDFLib` for read/write; encryption goes
   through `doc.encrypt(...)`, never `save({ userPassword })`.
 - Every user-visible string goes through i18n (`data-i18n` in markup,
-  `t()` in JS) and gets an Indonesian entry in `js/i18n-data.js`.
+  `t()` in JS) and gets an Indonesian entry in `js/i18n-data.js`. The language
+  preference is the only thing allowed in `localStorage`.
 - Verify with `python tools/serve.py` and the manual matrix in
-  `docs/ARCHITECTURE.md` §11; run `node tools/check-i18n.js` for text changes.
+  `docs/ARCHITECTURE.md` §11; run `node tools/check-i18n.js` and
+  `node tools/stamp-assets.js` after text/CSS/JS changes.
 
 ## Deploy
 
@@ -233,6 +244,14 @@ Drop the folder on any static host, or connect this repo to one:
 
 The only requirement is that `.js` is served as JavaScript and that the
 `netlify.toml` (or equivalent) headers are kept.
+
+**Styles/scripts not updating after a deploy?** The repository stamps every
+CSS/JS link with `?v=<content-hash>`; run `node tools/stamp-assets.js` after
+changes, upload all folders (`assets/`, `js/`, `vendor/`), and apply the cache
+policy in [`deploy/`](deploy/README.md). The usual cause is a cached
+`index.html` or a partial upload. See
+[`deploy/README.md`](deploy/README.md) for nginx/Apache configs and a
+verification checklist.
 
 ## Contributing
 

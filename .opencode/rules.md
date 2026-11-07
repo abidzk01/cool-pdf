@@ -9,9 +9,10 @@ are normative: if a request conflicts with them, say so before proceeding.
 ## 0. Project invariants — never violate
 
 1. **Everything is client-side.** No backend, no API calls, no upload, no
-   accounts, no persistence (`localStorage`, cookies, IndexedDB), no telemetry,
-   analytics, pixels, or beacons. A change that adds any of these is out of
-   scope until the maintainer approves it in an issue.
+   accounts, no telemetry, analytics, pixels, or beacons. A change that adds any
+   of these is out of scope until the maintainer approves it in an issue. The
+   only permitted persistence is the UI language (`localStorage['rxpdf.lang']`);
+   never store PDF bytes, names, passwords or any other user data.
 2. **No build step and no package manager for the app.** No npm/bun/pnpm
    dependency, no bundler, no transpiler, no CSS preprocessor for app code.
    Markup, CSS and JS are plain, hand-editable files: `index.html` (shell),
@@ -205,9 +206,16 @@ are normative: if a request conflicts with them, say so before proceeding.
   updates them without reload.
 - Keep `<html lang>` and the `#langEn`/`#langId` `aria-pressed` state in sync;
   `setLang()` already does this.
-- **No storage.** The language comes from `?lang=`/`navigator.language` and is
-  remembered with `history.replaceState`, never `localStorage` or cookies.
+- **Language persistence.** Remember the choice in
+  `localStorage['rxpdf.lang']` (query `?lang=` wins, then storage, then
+  `navigator.language`) and restore it in `initLang()`. That key is the only
+  allowed storage; never persist document data. Wrap storage access in
+  `try/catch`.
+- Update `?lang=` with `history.replaceState` so the current URL stays
+  shareable; keep `<html lang>` and `aria-pressed` in sync.
 - Run `node tools/check-i18n.js` before committing UI text changes.
+- After editing any CSS/JS file, run `node tools/stamp-assets.js` so
+  `index.html` points at the new hashed URLs.
 
 ### If Tailwind is ever introduced (rule for that day)
 

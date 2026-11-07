@@ -1,9 +1,13 @@
 'use strict';
 
 // Bilingual UI (English + Indonesian). English is the source: markup carries
-// data-i18n="<english>" and JS calls t('<english>', vars). No storage is used;
-// the language comes from ?lang= or navigator.language and is remembered only
-// in the URL (history.replaceState), so the privacy guarantees still hold.
+// data-i18n="<english>" and JS calls t('<english>', vars).
+//
+// The chosen language is persisted in localStorage under I18N_STORAGE_KEY. That
+// key is the ONLY thing this app ever stores: no PDF bytes, names, passwords or
+// analytics. ?lang= wins over storage, so shared links keep working.
+
+const I18N_STORAGE_KEY = 'rxpdf.lang';
 
 const I18N_META = {
   en: {
@@ -39,6 +43,14 @@ function t(source, vars) {
 
 function currentLang() {
   return I18N_LANG;
+}
+
+function readStoredLang() {
+  try { return localStorage.getItem(I18N_STORAGE_KEY); } catch (e) { return null; }
+}
+
+function storeLang(lang) {
+  try { localStorage.setItem(I18N_STORAGE_KEY, lang); } catch (e) { /* private mode / file:// */ }
 }
 
 function applyI18n() {
@@ -89,6 +101,7 @@ function updateLangButtons() {
 function setLang(lang, updateUrl) {
   I18N_LANG = i18nNormalize(lang);
   document.documentElement.lang = I18N_LANG;
+  storeLang(I18N_LANG);
   if (updateUrl !== false) {
     try {
       const url = new URL(location.href);
@@ -102,6 +115,7 @@ function setLang(lang, updateUrl) {
 function initLang() {
   let lang = null;
   try { lang = new URLSearchParams(location.search).get('lang'); } catch (e) { /* ignore */ }
+  if (!lang) lang = readStoredLang();
   if (!lang) lang = i18nNormalize(navigator.language || 'en');
   setLang(lang, false);
 }

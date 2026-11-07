@@ -22,7 +22,7 @@ You can expect an initial acknowledgement within a few days. Critical issues wil
 
 ## Threat model
 
-RxPDF Cool runs **entirely in the user's browser**. There is no backend, no upload, no account, no persistent storage, no shared state between users. This shapes what's in scope and what isn't:
+RxPDF Cool runs **entirely in the user's browser**. There is no backend, no upload, no account and no shared state between users. The only browser storage used is `localStorage['rxpdf.lang']` for the UI language; no document data is persisted. This shapes what's in scope and what isn't:
 
 ### In scope
 
@@ -52,7 +52,7 @@ RxPDF Cool runs **entirely in the user's browser**. There is no backend, no uplo
   - `Permissions-Policy` denying camera, microphone, geolocation, and FLoC
 - **Filename sanitization** strips path separators, control characters, and Windows-reserved names from every download.
 - **Password fields are cleared** from the DOM immediately after the encrypt/unlock operation completes.
-- **No `localStorage`, `sessionStorage`, `indexedDB`, or cookies.** Nothing about your PDFs persists across reloads.
+- **No storage of document data.** The only persisted value is `localStorage['rxpdf.lang']` (EN/ID). No PDF bytes, names, passwords, cookies or analytics are stored, and no `sessionStorage`/`indexedDB` is used.
 - **No analytics, telemetry, or tracking of any kind.** There are no third-party scripts at all.
 - **One validation gate for every file**: extension check, size ceiling, `%PDF-` magic bytes within the first 1024 bytes, and a real pdf-lib parse before any tool touches the bytes. Form values are clamped or allowlisted, and page ranges are validated against the document's page count.
 - **Encryption is real.** Protect applies **AES-256** (ISO 32000-2 R6) through `@cantoo/pdf-lib`'s `encrypt()`, with a random 32-byte owner password per save; Unlock decrypts with the supplied password and rebuilds a fresh document so the output carries no `/Encrypt` dictionary. (Upstream `pdf-lib@1.17.1` silently ignored password options, which is why the project switched to the maintained fork.)

@@ -47,7 +47,10 @@ Copy this into the PR description and tick what you verified.
 - [ ] Switch EN↔ID with a document loaded: page grid, parts summary, merge list,
       editor labels and props update without a reload.
 - [ ] `?lang=id` / `?lang=en` on load selects the language; `<html lang>` matches.
-- [ ] No `localStorage`/cookie is used to remember the language.
+- [ ] Choosing ID/EN writes `localStorage["rxpdf.lang"]`; reopening the site in
+      the same browser restores it, and removing the key falls back to the
+      browser language.
+- [ ] Only `rxpdf.lang` is stored; no PDF data, filename or password is persisted.
 - [ ] Support and profile links still open in a new tab with
       `rel="noopener noreferrer"`.
 

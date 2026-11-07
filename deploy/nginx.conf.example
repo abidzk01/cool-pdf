@@ -1,0 +1,58 @@
+# RxPDF Cool — nginx example
+#
+# Copy the `server` block into /etc/nginx/sites-available/ and adjust
+# server_name/root. The important part is the cache policy:
+#   - index.html is always revalidated
+#   - assets/css, /js and /vendor are content-hashed (?v=...) and cached forever
+# This is what prevents a VPS from serving yesterday's CSS/JS after a deploy.
+#
+#   sudo nginx -t && sudo systemctl reload nginx
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name rxdiag.my.id www.rxdiag.my.id;
+
+    root /var/www/rxpdf-cool;
+    index index.html;
+
+    # nginx ships mime.types; make sure these three are not served as octet-stream.
+    include /etc/nginx/mime.types;
+    types {
+        text/javascript js mjs;
+        text/css css;
+        font/woff2 woff2;
+        image/svg+xml svg;
+    }
+
+    # Security headers (mirror netlify.toml).
+    add_header X-Frame-Options "DENY" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), interest-cohort=()" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:; img-src 'self' data: blob:; connect-src 'self' blob:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'" always;
+
+    # The HTML shell must revalidate on every visit.
+    location = /index.html {
+        add_header Cache-Control "no-cache, must-revalidate" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        try_files $uri =404;
+    }
+
+    location = / {
+        add_header Cache-Control "no-cache, must-revalidate" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        try_files /index.html =404;
+    }
+
+    # Hashed assets can be cached forever.
+    location ~* ^/(assets|js|vendor)/ {
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        try_files $uri =404;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}

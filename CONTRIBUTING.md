@@ -81,7 +81,8 @@ Your PR description should include:
 - **Keep the source editable by hand.** No minification, no concatenation steps, no generated bundles. CSS and JS are split by concern, not bundled.
 - **No new runtime dependencies** without discussing in an issue first. If you must add a library, vendor it under `vendor/` and record its version, source, license and SHA-256/SHA-384 in `vendor/README.md`. Any file that must be fetched from a third-party origin needs a security review and an explicit CSP change.
 - **Sanitize anything that touches `innerHTML`** — use the existing `esc()` helper or, better, `textContent` / `createElement`.
-- **Every user-visible string is bilingual** — `data-i18n` in markup, `t()` in JS, and an Indonesian translation in `js/i18n-data.js`. Run `node tools/check-i18n.js`. The language switch must not use storage; it lives in `?lang=`.
+- **Every user-visible string is bilingual** — `data-i18n` in markup, `t()` in JS, and an Indonesian translation in `js/i18n-data.js`. Run `node tools/check-i18n.js`. The selected language is saved in `localStorage["rxpdf.lang"]` (the only stored value); `?lang=` still overrides it.
+- **Re-stamp asset URLs after editing CSS/JS** — run `node tools/stamp-assets.js` so `index.html` requests the new content hashes and VPS/CDN caches cannot serve stale files.
 - **No tracking, analytics, or telemetry.** Privacy is the entire pitch of this project.
 - **No secrets in the source.** No API keys, no tokens, no third-party services that require accounts.
 

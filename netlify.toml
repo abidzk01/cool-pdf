@@ -15,3 +15,26 @@
   [headers.values]
     Content-Type = "application/pdf"
     Content-Disposition = "attachment"
+
+# The shell must revalidate so new hashed CSS/JS URLs are picked up.
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+
+# Every first-party asset is content-hashed in index.html (?v=...), so it can be
+# cached forever. This is what stops a VPS/CDN from serving stale styles.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/vendor/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

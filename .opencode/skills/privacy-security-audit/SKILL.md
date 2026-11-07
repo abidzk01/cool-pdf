@@ -19,11 +19,13 @@ grep -rnE "localStorage|sessionStorage|indexedDB|document\.cookie" index.html js
 grep -rnoE "https?://[^\"' )]+" index.html js assets/css
 ```
 
-Expected: no network API call for user data; no storage API; the only URLs in
-`index.html` are metadata (Open Graph, JSON-LD) and the outbound links to
-<https://teer.id/rxdiag> and <https://rxdiag.my.id> (both must use
-`target="_blank"` + `rel="noopener noreferrer"` and must not be fetched). Any
-runtime asset must be first-party under `vendor/`, `js/` or `assets/`.
+Expected: no network API call for user data; the **only** storage allowed is
+`localStorage['rxpdf.lang']` (no `sessionStorage`, `indexedDB`, cookies or any
+other key); the only URLs in `index.html` are metadata (Open Graph, JSON-LD) and
+the outbound links to <https://teer.id/rxdiag> and <https://rxdiag.my.id> (both
+must use `target="_blank"` + `rel="noopener noreferrer"` and must not be
+fetched). Any runtime asset must be first-party under `vendor/`, `js/` or
+`assets/`.
 
 ## 2. CSP and headers (`netlify.toml`)
 

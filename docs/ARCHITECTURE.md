@@ -17,7 +17,8 @@ and every byte of processing happens in the user's browser tab. There is:
 
 - **no backend**, no API, no database, no upload endpoint;
 - **no build step** — no npm, no bundler, no `node_modules`;
-- **no storage** — no `localStorage`, `sessionStorage`, `indexedDB`, or cookies;
+- **no document storage** — no PDF bytes, names or passwords are persisted; the
+  only stored value is the UI language (`localStorage['rxpdf.lang']`);
 - **no analytics or telemetry** of any kind.
 
 The deployment target is a static host. `netlify.toml` sets the publish root and
@@ -93,7 +94,14 @@ pdf-studio/
 │       └── InterVariable.woff2# Inter variable font (self-hosted)
 │
 ├── tools/
-│   └── serve.py               # Local dev server with correct MIME types
+│   ├── serve.py               # Local dev server with correct MIME types
+│   ├── check-i18n.js          # Fails on missing i18n keys / unwrapped toasts
+│   └── stamp-assets.js        # Adds ?v=<sha256> cache busters to index.html
+│
+├── deploy/
+│   ├── README.md              # Cache/deploy checklist
+│   ├── nginx.conf.example     # index.html revalidates, hashed assets immutable
+│   └── apache.htaccess.example
 │
 ├── docs/
 │   └── ARCHITECTURE.md        # This document
@@ -182,6 +190,27 @@ theme.css → layout.css → components.css → editor.css → responsive.css
 
 `responsive.css` must stay last so its media queries win over base rules.
 `theme.css` declares the design tokens that every other file consumes.
+
+### Asset versioning and caching
+
+`index.html` links every first-party stylesheet and script with a content hash:
+
+```html
+<link rel="stylesheet" href="assets/css/editor.css?v=111a5759">
+<script src="js/editor.js?v=f79a7fd6"></script>
+```
+
+- After editing any file under `assets/css/` or `js/`, run
+  `node tools/stamp-assets.js` (or let `--check` fail in CI) and commit the
+  updated `index.html`.
+- Because the URL changes when the content changes, browsers and CDNs cannot
+  serve a stale stylesheet after a deploy.
+- `index.html` itself must revalidate; hashed files can be cached forever. The
+  policy lives in `netlify.toml` and in `deploy/nginx.conf.example` /
+  `deploy/apache.htaccess.example`.
+- Vendored libraries keep their versioned filenames and are cached the same way.
+- On a VPS, the classic "styles did not update" cause is uploading only
+  `index.html` or leaving `index.html` cached; see `deploy/README.md`.
 
 ### Where new code goes
 
@@ -325,10 +354,13 @@ The UI is bilingual without a framework or build step:
   `refreshDynamicTranslations()` (defined in `app.js`), which rebuilds the split
   page grid, parts summary, merge list, editor page label and props panel. Any
   new JS-rendered UI must add itself to that hook.
-- **No storage.** The initial language comes from `?lang=` or
-  `navigator.language`; switching rewrites the query string with
-  `history.replaceState` (`?lang=id`). This keeps the "no localStorage/cookies"
-  guarantee and survives a reload without persisting anything.
+- **Language persistence.** The chosen language is stored in
+  `localStorage['rxpdf.lang']` (the only key the app ever writes) and restored on
+  the next visit. Precedence: `?lang=` → stored value → `navigator.language` →
+  `en`. `setLang()` also rewrites the query string with `history.replaceState`
+  so the current page URL stays shareable; storage writes are wrapped in
+  `try/catch` for private mode and `file://`.
+- No PDF data, file name, password, token or analytics value is ever stored.
 - `setLang(lang)` is global because inline handlers call it; `initLang()` runs
   from `app.js` after every tool is defined.
 - Document language is kept in sync via `<html lang="…">`, and the switcher
@@ -510,7 +542,9 @@ operations and metadata are not part of the history — the Pages panel says so.
 - **First-party runtime**: all scripts, styles and the font are served from
   `assets/`, `js/` and `vendor/`. The CSP has no third-party origin;
   `default-src 'self'`.
-- **No storage, no cookies, no telemetry.** Nothing survives a reload.
+- **No storage of user documents.** The only persisted value is the UI
+  language (`localStorage['rxpdf.lang']`); no PDF bytes, names, passwords,
+  cookies or analytics are stored. Nothing else survives a reload.
 - **XSS containment**: `esc()` on every interpolation of user-controlled data;
   filenames additionally pass `safeName()` before becoming download names.
 - **Password hygiene**: password inputs are cleared from the DOM right after

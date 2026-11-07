@@ -11,8 +11,9 @@ executable checklist on top of them.
 
 ## Non-negotiables
 
-- Everything runs in the browser tab. No upload, no backend, no storage, no
-  analytics, no new third-party origin.
+- Everything runs in the browser tab. No upload, no backend, no document
+  storage, no analytics, no new third-party origin. The only allowed storage is
+  the UI language key (`rxpdf.lang`).
 - No build step: the change lives in plain files (`index.html` markup,
   `assets/css/*.css`, `js/*.js`), hand-readable, loaded in the documented order.
 - Every file goes through `readPdfFile()`; every numeric/enumerated value goes
