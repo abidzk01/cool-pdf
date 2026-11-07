@@ -1,0 +1,22 @@
+# Line-ending policy.
+#
+# Text in this repository is stored with LF and checked out with LF, so the
+# app is byte-identical on every platform and diffs stay clean.
+* text=auto eol=lf
+
+# Vendored runtime assets are referenced by checksum in vendor/README.md.
+# Never let Git rewrite their bytes (-text disables all EOL conversion).
+vendor/** -text
+*.min.js -text
+
+# Explicit binary types (belt and braces; Git usually detects these itself).
+*.woff2 binary
+*.woff binary
+*.ttf binary
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.zip binary
