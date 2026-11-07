@@ -6,7 +6,7 @@ async function addMergeFiles(files){
   if(S.busy)return;
   let added=0;
   for(const file of files){
-    if(S.mergeFiles.length>=LIMITS.maxMergeFiles){toast(`Max ${LIMITS.maxMergeFiles} files per merge`,'w');break;}
+    if(S.mergeFiles.length>=LIMITS.maxMergeFiles){toast(t('Max {n} files per merge',{n:LIMITS.maxMergeFiles}),'w');break;}
     let ab;
     try{ab=await readPdfFile(file);}
     catch(err){toast(err.message,'e');continue;}
@@ -30,9 +30,9 @@ function renderMergeList(){
       <span class="mi-icon">📄</span>
       <div class="mi-info">
         <div class="mi-name">${esc(f.name)}</div>
-        <div class="mi-meta">${f.pageCount} page${f.pageCount!==1?'s':''}</div>
+        <div class="mi-meta">${t('{n} pages',{n:f.pageCount})}</div>
       </div>
-      <button class="mi-del btn" onclick="removeMergeFile(${i})" title="Remove">✕</button>`;
+      <button class="mi-del btn" onclick="removeMergeFile(${i})" title="${t('Remove')}">✕</button>`;
     div.addEventListener('dragstart',ev=>{ev.dataTransfer.setData('text/plain',i);div.classList.add('dragging');});
     div.addEventListener('dragend',()=>div.classList.remove('dragging'));
     div.addEventListener('dragover',ev=>{ev.preventDefault();div.classList.add('drag-over');});
@@ -59,7 +59,7 @@ function clearMerge(){S.mergeFiles=[];G('merge-controls').style.display='none';G
 
 async function startMerge(){
   if(S.busy||S.mergeFiles.length<2){
-    if(S.mergeFiles.length<2)toast('Add at least 2 PDFs to merge','w');
+    if(S.mergeFiles.length<2)toast(t('Add at least 2 PDFs to merge'),'w');
     return;
   }
   S.startTime=Date.now();
@@ -76,8 +76,8 @@ async function startMerge(){
     (cur,tot)=>setProgress('merge',cur,tot));
     setProgress('merge',S.mergeFiles.length,S.mergeFiles.length);
     downloadBytes(result.bytes,'merged.pdf');
-    toast('Merge complete — downloading PDF','s');
-  }catch(err){toast('Merge failed: '+err.message,'e');}
+    toast(t('Merge complete — downloading PDF'),'s');
+  }catch(err){toast(t('Merge failed: ')+err.message,'e');}
   finally{setAllBusy(false);}
 }
 

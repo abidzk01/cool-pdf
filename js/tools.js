@@ -11,7 +11,7 @@ async function startCompress(file){
   setAllBusy(true);
   showProgress('compress',true);
   G('pf-compress').style.width='30%';
-  G('ps-compress').textContent='Processing…';
+  G('ps-compress').textContent=t('Processing...');
   try{
     const doc=await PDFLib.PDFDocument.load(ab);
     G('pf-compress').style.width='70%';
@@ -22,9 +22,9 @@ async function startCompress(file){
     const pct=((saved/ab.byteLength)*100).toFixed(1);
     const baseName=file.name.replace(/\.pdf$/i,'');
     downloadBytes(bytes,baseName+'-compressed.pdf');
-    if(saved>0)toast(`Compressed! Saved ${(saved/1024).toFixed(0)} KB (${pct}%)`,'s');
-    else toast('Re-saved — this PDF was already optimised (no size reduction)','i');
-  }catch(err){toast('Compression failed: '+err.message,'e');}
+    if(saved>0)toast(t('Compressed! Saved {kb} KB ({pct}%)',{kb:(saved/1024).toFixed(0),pct}),'s');
+    else toast(t('Re-saved — this PDF was already optimised (no size reduction)'),'i');
+  }catch(err){toast(t('Compression failed: ')+err.message,'e');}
   finally{setAllBusy(false);}
 }
 
@@ -63,8 +63,8 @@ async function startImages(file){
     }
     const baseName=file.name.replace(/\.pdf$/i,'');
     await downloadZip(images,baseName+'-images.zip');
-    toast(`Exported ${n} images — downloading ZIP`,'s');
-  }catch(err){toast('Export failed: '+err.message,'e');}
+    toast(t('Exported {n} images — downloading ZIP',{n}),'s');
+  }catch(err){toast(t('Export failed: ')+err.message,'e');}
   finally{setAllBusy(false);}
 }
 
@@ -78,7 +78,7 @@ async function loadWatermarkFile(file){
   catch(err){toast(err.message,'e');return;}
   S.watermarkFile={name:file.name,ab};
   G('watermark-opts').style.display='';
-  toast(`Loaded "${file.name}"`,'s',2000);
+  toast(t('Loaded "{name}"',{name:file.name}),'s',2000);
 }
 
 async function startWatermark(){
@@ -117,8 +117,8 @@ async function startWatermark(){
     const bytes=await doc.save();
     const baseName=S.watermarkFile.name.replace(/\.pdf$/i,'');
     downloadBytes(bytes,baseName+'-watermarked.pdf');
-    toast('Watermark added — downloading PDF','s');
-  }catch(err){toast('Watermark failed: '+err.message,'e');}
+    toast(t('Watermark added — downloading PDF'),'s');
+  }catch(err){toast(t('Watermark failed: ')+err.message,'e');}
   finally{setAllBusy(false);}
 }
 
@@ -132,7 +132,7 @@ async function loadPageNumFile(file){
   catch(err){toast(err.message,'e');return;}
   S.pageNumFile={name:file.name,ab};
   G('pagenums-opts').style.display='';
-  toast(`Loaded "${file.name}"`,'s',2000);
+  toast(t('Loaded "{name}"',{name:file.name}),'s',2000);
 }
 
 async function startPageNums(){
@@ -164,8 +164,8 @@ async function startPageNums(){
     const bytes=await doc.save();
     const baseName=S.pageNumFile.name.replace(/\.pdf$/i,'');
     downloadBytes(bytes,baseName+'-numbered.pdf');
-    toast('Page numbers added — downloading PDF','s');
-  }catch(err){toast('Failed: '+err.message,'e');}
+    toast(t('Page numbers added — downloading PDF'),'s');
+  }catch(err){toast(t('Failed: ')+err.message,'e');}
   finally{setAllBusy(false);}
 }
 
@@ -179,16 +179,16 @@ async function loadProtectFile(file){
   catch(err){toast(err.message,'e');return;}
   S.protectFile={name:file.name,ab};
   G('protect-opts').style.display='';
-  toast(`Loaded "${file.name}"`,'s',2000);
+  toast(t('Loaded "{name}"',{name:file.name}),'s',2000);
 }
 
 async function startProtect(){
   if(S.busy||!S.protectFile)return;
   const pass=G('prot-pass').value;
   const pass2=G('prot-pass2').value;
-  if(!pass){toast('Please enter a password','w');return;}
-  if(pass.length>128){toast('Password is too long (max 128 characters)','w');return;}
-  if(pass!==pass2){toast('Passwords do not match','e');return;}
+  if(!pass){toast(t('Please enter a password'),'w');return;}
+  if(pass.length>128){toast(t('Password is too long (max 128 characters)'),'w');return;}
+  if(pass!==pass2){toast(t('Passwords do not match'),'e');return;}
   S.startTime=Date.now();
   setAllBusy(true);
   showProgress('protect',true);
@@ -217,8 +217,8 @@ async function startProtect(){
     downloadBytes(bytes,baseName+'-protected.pdf');
     // Clear password fields from DOM after use
     G('prot-pass').value='';G('prot-pass2').value='';
-    toast('PDF protected — downloading','s');
-  }catch(err){toast('Protection failed: '+err.message,'e');}
+    toast(t('PDF protected — downloading'),'s');
+  }catch(err){toast(t('Protection failed: ')+err.message,'e');}
   finally{setAllBusy(false);}
 }
 
@@ -232,7 +232,7 @@ async function loadUnlockFile(file){
   catch(err){toast(err.message,'e');return;}
   S.unlockFile={name:file.name,ab};
   G('unlock-opts').style.display='';
-  toast(`Loaded "${file.name}"`,'s',2000);
+  toast(t('Loaded "{name}"',{name:file.name}),'s',2000);
 }
 
 async function startUnlock(){
@@ -256,10 +256,10 @@ async function startUnlock(){
     const baseName=S.unlockFile.name.replace(/\.pdf$/i,'');
     downloadBytes(bytes,baseName+'-unlocked.pdf');
     G('unlock-pass').value='';
-    toast('PDF unlocked — downloading','s');
+    toast(t('PDF unlocked — downloading'),'s');
   }catch(err){
     const msg=err.message||'';
-    toast(msg.toLowerCase().includes('password')?'Wrong password or not encrypted':'Unlock failed: '+msg,'e');
+    toast(msg.toLowerCase().includes('password')?t('Wrong password or not encrypted'):t('Unlock failed: ')+msg,'e');
   }
   finally{setAllBusy(false);}
 }

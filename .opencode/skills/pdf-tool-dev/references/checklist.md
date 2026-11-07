@@ -40,6 +40,17 @@ Copy this into the PR description and tick what you verified.
 - [ ] Limits hold: object count, text length, image size/type, page count.
 - [ ] Page operations remap objects correctly (duplicate/insert/delete/move).
 
+## Language
+
+- [ ] `node tools/check-i18n.js` passes.
+- [ ] Every new string has an Indonesian translation and reads naturally.
+- [ ] Switch EN↔ID with a document loaded: page grid, parts summary, merge list,
+      editor labels and props update without a reload.
+- [ ] `?lang=id` / `?lang=en` on load selects the language; `<html lang>` matches.
+- [ ] No `localStorage`/cookie is used to remember the language.
+- [ ] Support and profile links still open in a new tab with
+      `rel="noopener noreferrer"`.
+
 ## Quality
 
 - [ ] No console errors (a `favicon.ico` 404 aside).

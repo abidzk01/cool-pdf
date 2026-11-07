@@ -21,6 +21,7 @@ straight on the tools: a compact topbar, one line of copy, then the drop zone.
 | 🔒 **Password Protect** | **AES-256** encrypt your PDFs in one click |
 | 🔓 **Unlock PDF** | Remove the password from a PDF you own |
 | 🖊️ **Edit PDF** | Draw a signature with mouse/touch, add text, images, shapes, freehand ink, highlights or cover boxes, rotate/duplicate/insert/delete pages, and edit metadata |
+| 🌐 **Bilingual UI** | English and Indonesian, switchable from the topbar (`EN` / `ID`); no reload and no storage |
 
 ## Privacy by design
 
@@ -46,6 +47,7 @@ and the brand icons are first-party (`vendor/`, `assets/`). See
 | ZIP | [JSZip](https://stuk.github.io/jszip/) `3.10.1` |
 | Font | [Inter](https://rsms.me/inter/) variable, self-hosted WOFF2 |
 | Brand | `assets/` — square app icon, `favicon.ico`, 32×32 PNG, Apple touch icon |
+| i18n | `js/i18n-data.js` (English→Indonesian strings) + `js/i18n.js` (`t()`, `data-i18n`, language switch); no storage, preference carried in `?lang=` |
 | Concurrency | One Blob Worker (from an inline source string) for Split and Merge |
 | Hosting | Any static host; `netlify.toml` ships the security headers (CSP, `X-Frame-Options`, `nosniff`, …) |
 
@@ -95,6 +97,12 @@ SHA-256/SHA-384 in [`vendor/README.md`](vendor/README.md).
 3. Press the primary action button. The result downloads immediately — nothing
    is uploaded and nothing is kept.
 
+Use **EN / ID** in the topbar to switch language. The choice is kept in the URL
+(`?lang=id`) rather than storage; without a parameter the browser language
+decides. The topbar also links to the support page
+(<https://teer.id/rxdiag>) and the footer links to
+<https://rxdiag.my.id>.
+
 ## Project structure
 
 ```text
@@ -121,6 +129,8 @@ pdf-studio/
 │   └── logo-utama-rxpdf-cool.png # Wide lockup (reference artwork)
 │
 ├── js/                        # Classic scripts, loaded in this order:
+│   ├── i18n-data.js           #   English→Indonesian string map
+│   ├── i18n.js                #   t(), data-i18n, language switch (no storage)
 │   ├── core.js                #   validation, S state, helpers, theme, tabs,
 │   │                          #   drag & drop, downloads, progress, worker
 │   ├── split.js               #   Split
@@ -208,8 +218,10 @@ Why does the Compress tool not shrink my scanned PDF?
   `clampInt()`/`normalizeRange()`.
 - Use `pdfjsLib` for rendering and `PDFLib` for read/write; encryption goes
   through `doc.encrypt(...)`, never `save({ userPassword })`.
+- Every user-visible string goes through i18n (`data-i18n` in markup,
+  `t()` in JS) and gets an Indonesian entry in `js/i18n-data.js`.
 - Verify with `python tools/serve.py` and the manual matrix in
-  `docs/ARCHITECTURE.md` §11.
+  `docs/ARCHITECTURE.md` §11; run `node tools/check-i18n.js` for text changes.
 
 ## Deploy
 

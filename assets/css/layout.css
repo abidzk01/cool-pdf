@@ -37,6 +37,26 @@
 }
 .theme-btn:hover{background:var(--card);color:var(--text)}
 .theme-btn.active{background:var(--text);color:var(--bg-flat)}
+.support-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 13px;border-radius:980px;font-size:.75rem;font-weight:700;
+  color:#fff;text-decoration:none;white-space:nowrap;
+  background:linear-gradient(135deg,#f97316,#ef4444);
+  transition:filter .2s, transform .2s;
+}
+.support-btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.lang-group{
+  display:flex;gap:2px;padding:3px;border-radius:980px;
+  background:var(--hover);border:1px solid var(--border-s);
+}
+.lang-btn{
+  padding:5px 9px;border-radius:980px;border:none;
+  background:transparent;color:var(--text-m);
+  font-size:.7rem;font-weight:700;letter-spacing:.03em;
+  cursor:pointer;transition:all .2s;
+}
+.lang-btn:hover{color:var(--text)}
+.lang-btn.active{background:var(--text);color:var(--bg-flat)}
 
 /* ── HERO — compact, informative, never blocks the tools ─────────── */
 .hero{

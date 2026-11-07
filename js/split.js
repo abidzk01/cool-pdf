@@ -5,7 +5,7 @@
 async function loadSplitFile(file){
   if(!file||S.busy)return;
   resetSplitState(); // BUG-3
-  toast('Loading PDF…','i',2000);
+  toast(t('Loading PDF...'),'i',2000);
   let ab;
   try{ab=await readPdfFile(file);}
   catch(err){toast(err.message,'e');return;}
@@ -14,7 +14,7 @@ async function loadSplitFile(file){
   try{
     S.pdfJsDoc=await pdfjsLib.getDocument({data:ab.slice(0)}).promise;
     const n=S.pdfJsDoc.numPages;
-    if(n>LIMITS.maxPages)toast(`This PDF has ${n} pages — very large files may be slow`,'w',5000);
+    if(n>LIMITS.maxPages)toast(t('This PDF has {n} pages — very large files may be slow',{n}),'w',5000);
     S.pageOrder=Array.from({length:n},(_,i)=>i);
     S.pageBuffers=[ab.slice(0)];
     G('split-controls').style.display='';
@@ -22,8 +22,8 @@ async function loadSplitFile(file){
     onSplitModeChange();
     renderPageGrid();
     renderPartsSummary();
-    toast(`Loaded "${esc(file.name)}" — ${n} pages. Click between pages to add ✂️ cuts.`,'s');
-  }catch(err){toast('Failed to read PDF: '+err.message,'e');}
+    toast(t('Loaded "{name}" — {n} pages. Click between pages to add ✂️ cuts.',{name:file.name,n}),'s');
+  }catch(err){toast(t('Failed to read PDF: ')+err.message,'e');}
 }
 
 function renderPageGrid(){
@@ -42,7 +42,7 @@ function renderPageGrid(){
     for(let s=0;s<breakpoints.length-1;s++){
       const start=breakpoints[s], end=breakpoints[s+1];
       const partColor=hasCuts?(PART_COLORS[s%PART_COLORS.length]):'';
-      const partLabel=hasCuts?`Part ${s+1}`:'';
+      const partLabel=hasCuts?t('Part {n}',{n:s+1}):'';
 
       // Part header
       if(hasCuts){
@@ -50,7 +50,7 @@ function renderPageGrid(){
         hdr.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 4px 6px;';
         hdr.innerHTML=`<span style="width:8px;height:8px;border-radius:50%;background:${partColor}"></span>
           <span style="font-size:.78rem;font-weight:700;color:var(--text)">${partLabel}</span>
-          <span style="font-size:.7rem;color:var(--text-m)">${end-start} pages</span>`;
+          <span style="font-size:.7rem;color:var(--text-m)">${t('{n} pages',{n:end-start})}</span>`;
         container.appendChild(hdr);
       }
 
@@ -117,10 +117,10 @@ function makePageThumb(origIdx,pos,partColor,partLabel){
     <span class="drag-handle">⠿</span>
     ${partColor?`<span class="part-label" style="background:${partColor}">${partLabel}</span>`:''}
     <canvas id="tc-${origIdx}" width="120" height="160" style="background:var(--inp);border-radius:6px"></canvas>
-    <div class="page-num">Page ${origIdx+1}</div>
+    <div class="page-num">${t('Page {n}',{n:origIdx+1})}</div>
     <div class="page-actions">
-      <button class="btn btn-xs btn-ghost" onclick="rotatePage(${origIdx})" title="Rotate">↻</button>
-      <button class="btn btn-xs ${isDeleted?'btn-warning':'btn-danger'}" onclick="toggleDelete(${origIdx})" title="${isDeleted?'Restore':'Delete'}">${isDeleted?'↩':'🗑'}</button>
+      <button class="btn btn-xs btn-ghost" onclick="rotatePage(${origIdx})" title="${t('Rotate')}">↻</button>
+      <button class="btn btn-xs ${isDeleted?'btn-warning':'btn-danger'}" onclick="toggleDelete(${origIdx})" title="${isDeleted?t('Restore'):t('Delete')}">${isDeleted?'↩':'🗑'}</button>
     </div>`;
   div.addEventListener('click',ev=>{
     if(ev.target.closest('.btn')||ev.target.closest('.part-label'))return;
@@ -165,7 +165,7 @@ function renderThumb(origIdx){
   }).catch(()=>{});
 }
 
-function updateSelCount(){G('sel-count').textContent=S.selected.size+' selected';}
+function updateSelCount(){G('sel-count').textContent=t('{n} selected',{n:S.selected.size});}
 function selectAll(){S.pageOrder.forEach(i=>S.selected.add(i));renderPageGrid();}
 function selectNone(){S.selected.clear();renderPageGrid();}
 function invertSel(){S.pageOrder.forEach(i=>S.selected.has(i)?S.selected.delete(i):S.selected.add(i));renderPageGrid();}
@@ -194,7 +194,7 @@ function clearAllCuts(){
 }
 function getPartsFromCuts(){
   const active=S.pageOrder.filter((_,i)=>!S.deleted.has(S.pageOrder[i]));
-  if(!S.cuts.size)return[{pages:active,label:'All pages'}];
+  if(!S.cuts.size)return[{pages:active,label:t('All pages')}];
   const sorted=[...S.cuts].sort((a,b)=>a-b);
   const parts=[];
   let start=0;
@@ -209,7 +209,7 @@ function getPartsFromCuts(){
   // remaining
   const rem=S.pageOrder.slice(start).filter(i=>!S.deleted.has(i));
   if(rem.length)parts.push({pages:rem,startPos:start,endPos:S.pageOrder.length-1});
-  return parts.map((p,i)=>({...p,label:`Part ${i+1}`,color:PART_COLORS[i%PART_COLORS.length]}));
+  return parts.map((p,i)=>({...p,label:t('Part {n}',{n:i+1}),color:PART_COLORS[i%PART_COLORS.length]}));
 }
 function renderPartsSummary(){
   const el=G('parts-summary');
@@ -218,9 +218,9 @@ function renderPartsSummary(){
   el.style.display='';
   el.innerHTML=`
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-      <span style="font-size:.9rem;font-weight:700;color:var(--text)">✂️ ${parts.length} Parts</span>
+      <span style="font-size:.9rem;font-weight:700;color:var(--text)">✂️ ${t('{n} parts',{n:parts.length})}</span>
       <div class="parts-actions">
-        <button class="btn btn-primary btn-sm" onclick="downloadAllParts()">⬇ Download All (ZIP)</button>
+        <button class="btn btn-primary btn-sm" onclick="downloadAllParts()">${t('⬇ Download All (ZIP)')}</button>
       </div>
     </div>
     ${parts.map((p,i)=>`
@@ -228,9 +228,9 @@ function renderPartsSummary(){
         <div class="part-dot" style="background:${p.color}"></div>
         <div class="part-info">
           <input class="part-name-input" id="pname-${i}" value="${esc(S.splitFileName||'document')}_part-${i+1}" style="border:1px solid var(--border);border-radius:8px;padding:2px 8px;font-size:.85rem;background:var(--bg-flat);color:var(--text);width:180px;outline:none">
-          <div class="part-meta">${p.pages.length} page${p.pages.length!==1?'s':''} · Pages ${p.pages.map(x=>x+1).join(', ').substring(0,60)}${p.pages.length>8?'…':''}</div>
+          <div class="part-meta">${t('{n} pages',{n:p.pages.length})} · Pages ${p.pages.map(x=>x+1).join(', ').substring(0,60)}${p.pages.length>8?'…':''}</div>
         </div>
-        <button class="part-dl" onclick="downloadPart(${i})">⬇ Download</button>
+        <button class="part-dl" onclick="downloadPart(${i})">${t('⬇ Download')}</button>
       </div>`).join('')}`;
 }
 // Quick suggestions
@@ -281,8 +281,8 @@ async function downloadPart(partIndex){
     (cur,tot)=>setProgress('split',cur,tot));
     const fname=(G('pname-'+partIndex)?.value||p.label).replace(/\.pdf$/i,'')+'.pdf';
     downloadBytes(result.results[0].bytes,fname);
-    toast(`${p.label} downloaded ✅`,'s');
-  }catch(err){toast('Download failed: '+err.message,'e');}
+    toast(t('{name} downloaded ✅',{name:p.label}),'s');
+  }catch(err){toast(t('Download failed: ')+err.message,'e');}
   finally{setAllBusy(false);}
 }
 // Download all parts as ZIP
@@ -311,8 +311,8 @@ async function downloadAllParts(){
     }
     setProgress('split',parts.length,parts.length);
     await downloadZip(allResults,(S.splitFileName||'split')+'-parts.zip');
-    toast(`Downloaded ${parts.length} parts as ZIP ✅`,'s');
-  }catch(err){toast('Download failed: '+err.message,'e');}
+    toast(t('Downloaded {n} parts as ZIP ✅',{n:parts.length}),'s');
+  }catch(err){toast(t('Download failed: ')+err.message,'e');}
   finally{setAllBusy(false);}
 }
 
@@ -336,7 +336,7 @@ async function startSplit(){
   const mode=G('split-mode').value;
   // Handle cuts mode via downloadAllParts
   if(mode==='cuts'){
-    if(!S.cuts.size){toast('Place at least one ✂️ cut between pages first','w');return;}
+    if(!S.cuts.size){toast(t('Place at least one ✂️ cut between pages first'),'w');return;}
     await downloadAllParts();
     return;
   }
@@ -344,14 +344,14 @@ async function startSplit(){
   const every=String(clampInt(G('split-every').value,1,9999,2));
   if(mode==='range'){
     range=normalizeRange(range,S.pageOrder.length);
-    if(!range){toast(`Invalid range — use e.g. 1-3,5,7-9 (1-${S.pageOrder.length})`,'w');return;}
+    if(!range){toast(t('Invalid range — use e.g. 1-3,5,7-9 (1-{n})',{n:S.pageOrder.length}),'w');return;}
   }
   let order=S.pageOrder.slice();
   let deletedArr=Array.from(S.deleted);
   if(mode==='selected'){
     order=S.pageOrder.filter(i=>S.selected.has(i)&&!S.deleted.has(i));
     deletedArr=[];
-    if(!order.length){toast('Select at least one page first','w');return;}
+    if(!order.length){toast(t('Select at least one page first'),'w');return;}
   }
   S.startTime=Date.now();
   setAllBusy(true);
@@ -372,12 +372,12 @@ async function startSplit(){
     if(result.multiple){
       const files=result.results.map((r,i)=>({name:`part-${i+1}.pdf`,bytes:r.bytes}));
       await downloadZip(files,'split-pages.zip');
-      toast(`Split into ${files.length} files — downloading ZIP`,'s');
+      toast(t('Split into {n} files — downloading ZIP',{n:files.length}),'s');
     } else {
       downloadBytes(result.results[0].bytes,'split-output.pdf');
-      toast('Split complete — downloading PDF','s');
+      toast(t('Split complete — downloading PDF'),'s');
     }
-  }catch(err){toast('Split failed: '+err.message,'e');}
+  }catch(err){toast(t('Split failed: ')+err.message,'e');}
   finally{setAllBusy(false);}
 }
 

@@ -23,3 +23,23 @@ document.addEventListener('keydown',e=>{
     e.shiftKey?editRedo():editUndo();
   }
 });
+
+// ── i18n ─────────────────────────────────────────────────────────────
+// Called by applyI18n(): re-render the pieces that are built in JS.
+function refreshDynamicTranslations(){
+  if(S.splitFile){
+    renderPageGrid();
+    renderPartsSummary();
+  }
+  if(S.mergeFiles&&S.mergeFiles.length)renderMergeList();
+  if(S.edit){
+    G('edit-page-label').textContent=(S.edit.page+1)+' / '+S.edit.plan.length;
+    renderEditProps();
+    const add=G('edit-text-add');
+    if(add&&G('edit-text-panel').style.display!=='none'){
+      add.textContent=t(S.edit.textTarget?'Update text':'Add text');
+    }
+  }
+}
+
+initLang();

@@ -20,8 +20,10 @@ grep -rnoE "https?://[^\"' )]+" index.html js assets/css
 ```
 
 Expected: no network API call for user data; no storage API; the only URLs in
-`index.html` are metadata (Open Graph, JSON-LD). Any runtime asset must be
-first-party under `vendor/`, `js/` or `assets/`.
+`index.html` are metadata (Open Graph, JSON-LD) and the outbound links to
+<https://teer.id/rxdiag> and <https://rxdiag.my.id> (both must use
+`target="_blank"` + `rel="noopener noreferrer"` and must not be fetched). Any
+runtime asset must be first-party under `vendor/`, `js/` or `assets/`.
 
 ## 2. CSP and headers (`netlify.toml`)
 

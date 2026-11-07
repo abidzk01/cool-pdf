@@ -14,6 +14,7 @@ const EDIT_FONT_CSS={
 };
 const EDIT_PEN=2.5;
 let editRenderToken=0;
+const EDIT_TYPE_LABEL={sign:'Signature',text:'Text',image:'Image',rect:'Rect',ellipse:'Ellipse',line:'Line',ink:'Ink',highlight:'Highlight',cover:'Cover'};
 
 function nextEditId(){const E=S.edit;E.seq=(E.seq||1)+1;return 'o'+E.seq;}
 function clamp01(v){return Math.min(1,Math.max(0,v));}
@@ -24,11 +25,11 @@ async function loadEditFile(file){
   let ab;
   try{ab=await readPdfFile(file);}
   catch(err){toast(err.message,'e');return;}
-  if(file.size>EDIT_LIMITS.maxBytes)toast(`Large file (${fmtBytes(file.size)}) — editing may be slow`,'w',5000);
+  if(file.size>EDIT_LIMITS.maxBytes)toast(t('Large file ({size}) — editing may be slow',{size:fmtBytes(file.size)}),'w',5000);
   try{
     const pdfDoc=await pdfjsLib.getDocument({data:ab.slice(0)}).promise;
     const n=pdfDoc.numPages;
-    if(n>EDIT_LIMITS.maxPages)toast(`${n} pages — editing may be slow beyond ${EDIT_LIMITS.maxPages}`,'w',5000);
+    if(n>EDIT_LIMITS.maxPages)toast(t('{n} pages — editing may be slow beyond {max}',{n,max:EDIT_LIMITS.maxPages}),'w',5000);
     const plan=[];
     for(let i=0;i<n;i++){
       const p=await pdfDoc.getPage(i+1);
@@ -48,8 +49,8 @@ async function loadEditFile(file){
     setEditTool('select');
     await renderEditPage(true);
     G('edit-workspace').scrollIntoView({block:'start'});
-    toast(`Loaded "${file.name}" — ${n} page${n!==1?'s':''}. Pick a tool to start editing.`,'s');
-  }catch(err){toast('Failed to open PDF: '+err.message,'e');}
+    toast(t('Loaded "{name}" — {n} page(s). Pick a tool to start editing.',{name:file.name,n}),'s');
+  }catch(err){toast(t('Failed to open PDF: ')+err.message,'e');}
 }
 
 function clearEdit(){
@@ -313,7 +314,7 @@ function renderEditProps(){
   const box=G('edit-props');
   if(!E||!o||E.tool!=='select'){box.style.display='none';return;}
   box.style.display='';
-  G('edit-props-name').textContent=o.type;
+  G('edit-props-name').textContent=t(EDIT_TYPE_LABEL[o.type]||o.type);
   G('edit-opacity').value=String(Math.round((o.opacity==null?1:o.opacity)*100));
   G('edit-color').value=o.color||'#111111';
   const sizeVal=o.type==='text'?o.size:Math.round((o.sw||.0025)*1000);
@@ -518,7 +519,7 @@ function finishBox(d){
   const x=Math.min(d.x0,d.x1),y=Math.min(d.y0,d.y1);
   const w=Math.abs(d.x1-d.x0),h=Math.abs(d.y1-d.y0);
   if(w<.005||h<.005){return;}
-  if(E.objects.length>=EDIT_LIMITS.maxObjects){toast('Object limit reached','w');return;}
+  if(E.objects.length>=EDIT_LIMITS.maxObjects){toast(t('Object limit reached'),'w');return;}
   const type=d.type;
   const o={
     id:nextEditId(),page:E.page,type,
@@ -559,7 +560,7 @@ function openTextPanel(fx,fy){
   E.textAt={fx,fy};
   E.textTarget=null;
   G('edit-text-value').value='';
-  G('edit-text-add').textContent='Add text';
+  G('edit-text-add').textContent=t('Add text');
   G('edit-text-panel').style.display='';
   G('edit-pages-panel').style.display='none';
   G('edit-meta-panel').style.display='none';
@@ -579,7 +580,7 @@ function editEditText(){
   G('edit-text-font').value=o.font;
   G('edit-text-size').value=String(o.size);
   G('edit-text-color').value=o.color;
-  G('edit-text-add').textContent='Update text';
+  G('edit-text-add').textContent=t('Update text');
   G('edit-text-panel').style.display='';
   G('edit-text-value').focus();
 }
@@ -587,7 +588,7 @@ function editCommitText(){
   const E=S.edit;if(!E)return;
   const raw=G('edit-text-value').value||'';
   const text=raw.trim().slice(0,EDIT_LIMITS.maxText);
-  if(!text){toast('Type some text first','w');return;}
+  if(!text){toast(t('Type some text first'),'w');return;}
   const size=clampInt(G('edit-text-size').value,6,96,18);
   const font=EDIT_FONT_CSS[G('edit-text-font').value]?G('edit-text-font').value:'Helvetica';
   const color=/^#[0-9a-f]{6}$/i.test(G('edit-text-color').value)?G('edit-text-color').value:'#111111';
@@ -600,7 +601,7 @@ function editCommitText(){
       E.selectedId=o.id;
     }
   }else{
-    if(E.objects.length>=EDIT_LIMITS.maxObjects){toast('Object limit reached','w');return;}
+    if(E.objects.length>=EDIT_LIMITS.maxObjects){toast(t('Object limit reached'),'w');return;}
     const at=E.textAt||{fx:.1,fy:.1};
     const fw=.45;
     const charsPerLine=Math.max(8,Math.floor((fw*E.dispW)/(size*.55)));
@@ -650,7 +651,7 @@ function dataUrlBytes(url){
 function addEditImageObject(src,imgW,imgH,type){
   const E=S.edit;
   if(!E)return;
-  if(E.objects.length>=EDIT_LIMITS.maxObjects){toast('Object limit reached','w');return;}
+  if(E.objects.length>=EDIT_LIMITS.maxObjects){toast(t('Object limit reached'),'w');return;}
   const aspect=imgW/imgH;
   const defW=type==='sign'?.3:.32;
   let fw=defW;
@@ -671,12 +672,12 @@ function addEditImageObject(src,imgW,imgH,type){
 async function editAddImage(file){
   const E=S.edit;
   if(!E||!file)return;
-  if(!/^image\/(png|jpeg|webp)$/i.test(file.type)){toast('Use a PNG, JPEG or WebP image','e');G('fi-edit-image').value='';return;}
-  if(file.size>EDIT_LIMITS.maxImageBytes){toast(`Image too large (max ${fmtBytes(EDIT_LIMITS.maxImageBytes)})`,'e');G('fi-edit-image').value='';return;}
+  if(!/^image\/(png|jpeg|webp)$/i.test(file.type)){toast(t('Use a PNG, JPEG or WebP image'),'e');G('fi-edit-image').value='';return;}
+  if(file.size>EDIT_LIMITS.maxImageBytes){toast(t('Image too large (max {size})',{size:fmtBytes(EDIT_LIMITS.maxImageBytes)}),'e');G('fi-edit-image').value='';return;}
   try{
     const data=await readFileAsDataURL(file);
     const img=await loadImageEl(data);
-    if(img.naturalWidth<32||img.naturalHeight<32){toast('Image is too small (min 32x32 px)','e');G('fi-edit-image').value='';return;}
+    if(img.naturalWidth<32||img.naturalHeight<32){toast(t('Image is too small (min 32x32 px)'),'e');G('fi-edit-image').value='';return;}
     const c=document.createElement('canvas');
     c.width=img.naturalWidth;c.height=img.naturalHeight;
     c.getContext('2d').drawImage(img,0,0);
@@ -699,7 +700,7 @@ function initSignPad(){
     e.preventDefault();
     c.setPointerCapture(e.pointerId);
     const p=pos(e);
-    if(S.signPad.strokes.length>=EDIT_LIMITS.maxStrokes){toast('Too many strokes — use Clear','w');return;}
+    if(S.signPad.strokes.length>=EDIT_LIMITS.maxStrokes){toast(t('Too many strokes — use Clear'),'w');return;}
     S.signPad.cur=[p];
     drawSignPad();
   });
@@ -725,7 +726,7 @@ const SIGN_MIN_POINTS=3;
 
 function openSignPad(){
   const E=S.edit;
-  if(!E){toast('Load a PDF first','w');return;}
+  if(!E){toast(t('Load a PDF first'),'w');return;}
   setEditTool('select');
   S.signPad={strokes:[],cur:null,pen:3,color:'#111111'};
   G('sign-modal').style.display='flex';
@@ -804,11 +805,11 @@ function signApply(){
   const strokes=P.strokes.concat(P.cur?[P.cur]:[]);
   const all=[];
   strokes.forEach(s=>s.forEach(p=>all.push(p)));
-  if(all.length<SIGN_MIN_POINTS){toast('Draw your signature first','w');return;}
+  if(all.length<SIGN_MIN_POINTS){toast(t('Draw your signature first'),'w');return;}
   const xs=all.map(p=>p.x),ys=all.map(p=>p.y);
   let x0=Math.min.apply(null,xs),x1=Math.max.apply(null,xs);
   let y0=Math.min.apply(null,ys),y1=Math.max.apply(null,ys);
-  if(x1-x0<.02||y1-y0<.01){toast('Signature is too small — draw a little larger','w');return;}
+  if(x1-x0<.02||y1-y0<.01){toast(t('Signature is too small — draw a little larger'),'w');return;}
   const c=G('sign-canvas');
   const dpr=parseFloat(c.dataset.dpr)||1;
   const cssW=c.width/dpr,cssH=c.height/dpr;
@@ -830,7 +831,7 @@ function signApply(){
   strokes.forEach(pts=>drawSignStroke(ctx,pts,cssW,cssH));
   addEditImageObject(oc.toDataURL('image/png'),outW,outH,'sign');
   closeSignPad();
-  toast('Signature added — drag it into place, then save','s');
+  toast(t('Signature added — drag it into place, then save'),'s');
 }
 
 // ── Page operations ─────────────────────────────────────────────────
@@ -855,7 +856,7 @@ function editRotatePage(){
   const p=E.plan[E.page];
   p.rot=(p.rot+90)%360;
   renderEditPage(false);
-  toast('Page rotated 90°','i',1500);
+  toast(t('Page rotated 90°'),'i',1500);
 }
 function editDuplicatePage(){
   const E=S.edit;if(!E||S.busy)return;
@@ -871,7 +872,7 @@ function editDuplicatePage(){
   E.objects.push.apply(E.objects,clones);
   E.page=i+1;
   renderEditPage(false);
-  toast('Page duplicated','s',1500);
+  toast(t('Page duplicated'),'s',1500);
 }
 function editInsertPage(){
   const E=S.edit;if(!E||S.busy)return;
@@ -880,18 +881,18 @@ function editInsertPage(){
   E.plan.splice(i+1,0,{src:null,rot:0,blank:true,w:p.w,h:p.h});
   E.page=i+1;
   renderEditPage(false);
-  toast('Blank page inserted','s',1500);
+  toast(t('Blank page inserted'),'s',1500);
 }
 function editDeletePage(){
   const E=S.edit;if(!E||S.busy)return;
-  if(E.plan.length<=1){toast('A PDF needs at least one page','w');return;}
+  if(E.plan.length<=1){toast(t('A PDF needs at least one page'),'w');return;}
   const i=E.page;
   E.plan.splice(i,1);
   E.objects=E.objects.filter(o=>o.page!==i);
   E.objects.forEach(o=>{if(o.page>i)o.page--;});
   E.page=Math.min(E.page,E.plan.length-1);
   renderEditPage(false);
-  toast('Page deleted','s',1500);
+  toast(t('Page deleted'),'s',1500);
 }
 function editMovePage(dir){
   const E=S.edit;if(!E||S.busy)return;
@@ -1072,10 +1073,10 @@ async function editSave(){
     const bytes=await out.save();
     downloadBytes(bytes,(E.name||'document')+'-edited.pdf');
     setProgress('edit',E.plan.length,E.plan.length);
-    toast('Saved — downloading your edited PDF','s');
+    toast(t('Saved — downloading your edited PDF'),'s');
     setTimeout(()=>showProgress('edit',false),1500);
   }catch(err){
-    toast('Save failed: '+err.message,'e');
+    toast(t('Save failed: ')+err.message,'e');
   }finally{
     setAllBusy(false);
   }

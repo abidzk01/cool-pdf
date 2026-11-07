@@ -46,14 +46,14 @@ function fmtBytes(n){
 // Single entry point for every file input and drop zone.
 // opts.allowEncrypted — only the Unlock tool may accept a password-protected PDF.
 async function readPdfFile(file,opts){
-  if(!file)throw new Error('No file selected');
-  if(!isPdfName(file.name))throw new Error(`"${file.name}" is not a PDF file`);
-  if(file.size===0)throw new Error('File is empty');
+  if(!file)throw new Error(t('No file selected'));
+  if(!isPdfName(file.name))throw new Error(t('"{name}" is not a PDF file',{name:file.name}));
+  if(file.size===0)throw new Error(t('File is empty'));
   const maxBytes=(opts&&opts.maxBytes)||LIMITS.maxBytes;
-  if(file.size>maxBytes)throw new Error(`File too large (${fmtBytes(file.size)}) — max ${fmtBytes(maxBytes)}`);
+  if(file.size>maxBytes)throw new Error(t('File too large ({size}) — max {max}',{size:fmtBytes(file.size),max:fmtBytes(maxBytes)}));
   const ab=await file.arrayBuffer();
-  if(!hasPdfMagic(ab))throw new Error('Not a valid PDF — missing %PDF- header');
-  if(!(opts&&opts.allowEncrypted)&&!(await validatePDF(ab)))throw new Error('Invalid, corrupt or encrypted PDF');
+  if(!hasPdfMagic(ab))throw new Error(t('Not a valid PDF — missing %PDF- header'));
+  if(!(opts&&opts.allowEncrypted)&&!(await validatePDF(ab)))throw new Error(t('Invalid, corrupt or encrypted PDF'));
   return ab;
 }
 
@@ -140,7 +140,7 @@ function setProgress(tab,cur,tot){
   if(fill)fill.style.width=pct+'%';
   if(stats)stats.textContent=cur+'/'+tot;
   if(pctEl)pctEl.textContent=pct+'%';
-  if(etaEl)etaEl.textContent=pct<100?'~'+eta+'s left':'Done!';
+  if(etaEl)etaEl.textContent=pct<100?t('~{n}s left',{n:eta}):t('Done!');
 }
 
 // BUG-5: worker always terminated in try/finally

@@ -17,6 +17,8 @@ executable checklist on top of them.
   `assets/css/*.css`, `js/*.js`), hand-readable, loaded in the documented order.
 - Every file goes through `readPdfFile()`; every numeric/enumerated value goes
   through `clampInt()` or an allowlist.
+- Every user-visible string is bilingual: `data-i18n` in markup, `t()` in JS,
+  and an Indonesian entry in `js/i18n-data.js`.
 - Libraries: `pdfjsLib` for rendering, `PDFLib` (`@cantoo/pdf-lib`) for
   read/write. Encryption is `doc.encrypt(...)`, never `save({ userPassword })`.
 
@@ -40,9 +42,10 @@ executable checklist on top of them.
 7. **Heavy work.** If a transform can exceed ~1 s, add a branch to `WORKER_SRC`
    and call it through `runWorkerTask()`, passing transferables and
    `PDFLibSrc: PDFLIB_URL` (absolute — required inside the Blob worker).
-8. **Copy.** Add the tool to `.tabs`, update the JSON-LD `featureList` and meta
-   description, and mention it in `README.md` if it is new or renamed. Do not
-   reintroduce a separate landing screen.
+8. **Copy + i18n.** Add the tool to `.tabs`, update the JSON-LD `featureList`
+   and meta description, mention it in `README.md`, and give every new string a
+   `data-i18n` key plus an Indonesian translation in `js/i18n-data.js`. Run
+   `node tools/check-i18n.js`. Do not reintroduce a separate landing screen.
 9. **Docs.** Update `docs/ARCHITECTURE.md` §6.4 (pipelines), §9 (gaps) and §11
    (verification matrix).
 

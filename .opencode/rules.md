@@ -18,8 +18,10 @@ are normative: if a request conflicts with them, say so before proceeding.
    `assets/css/*.css` and `js/*.js`.
 3. **Respect the split.** CSS goes in the file that owns the concern
    (`theme`, `layout`, `components`, `editor`, `responsive`); JS goes in the
-   module that owns it (`core`, `split`, `merge`, `tools`, `editor`, `app`).
-   `responsive.css` stays last; `core.js` stays first; `app.js` stays last.
+   module that owns it (`i18n-data`, `i18n`, `core`, `split`, `merge`, `tools`,
+   `editor`, `app`).
+   `responsive.css` stays last; `i18n-data.js`/`i18n.js` stay first;
+   `app.js` stays last.
    Classic scripts share one global scope, so every top-level name is declared
    exactly once across all files.
 4. **No new runtime dependency without an issue first.** If one is truly
@@ -186,6 +188,27 @@ are normative: if a request conflicts with them, say so before proceeding.
   canvas; crop to the stroke bounding box and export a transparent PNG. Do not
   rasterize whole PDF pages unless the user explicitly accepts losing text.
 
+### Internationalization rules (English / Indonesian)
+
+- **Every user-visible string goes through i18n.** In markup use
+  `data-i18n="<english>"` (or `data-i18n-placeholder`, `data-i18n-title`,
+  `data-i18n-aria`); in JS use `t('<english>', {vars})`. Never add a new English
+  toast, label, title or placeholder literal.
+- English is the key. Add the Indonesian translation to `js/i18n-data.js` in the
+  same commit. Missing keys silently fall back to English, so a feature is not
+  finished until both languages read naturally.
+- Prefer whole sentences with `{name}` placeholders over string concatenation;
+  that keeps word order translatable. Do not translate brand names, `PDF`,
+  `AES-256`, file extensions, DPI labels or user file names.
+- JS-rendered UI must use `t()` at render time, and persistent regions must be
+  added to `refreshDynamicTranslations()` in `app.js` so a language switch
+  updates them without reload.
+- Keep `<html lang>` and the `#langEn`/`#langId` `aria-pressed` state in sync;
+  `setLang()` already does this.
+- **No storage.** The language comes from `?lang=`/`navigator.language` and is
+  remembered with `history.replaceState`, never `localStorage` or cookies.
+- Run `node tools/check-i18n.js` before committing UI text changes.
+
 ### If Tailwind is ever introduced (rule for that day)
 
 Approved only if it is a **build-time, committed artifact** — no CDN JIT script
@@ -310,6 +333,7 @@ specific and free of internal detail.
 
 ```bash
 python tools/serve.py 8000      # correct MIME types; required on Windows
+node tools/check-i18n.js        # i18n coverage check
 ```
 
 Do **not** rely on `python -m http.server` on Windows: it serves `.js` as

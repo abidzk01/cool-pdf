@@ -69,6 +69,8 @@ pdf-studio/
 │   └── logo-utama-rxpdf-cool.png # Wide lockup (reference/export artwork)
 │
 ├── js/                        # Classic scripts, loaded in dependency order
+│   ├── i18n-data.js           #   English→Indonesian string map (source = English)
+│   ├── i18n.js                #   t(), applyI18n(), setLang(), meta titles
 │   ├── core.js                #   validation, S state, helpers, theme, tabs,
 │   │                          #   drag & drop, downloads, progress, worker
 │   ├── split.js               #   Split tool
@@ -156,11 +158,13 @@ All scripts are **classic scripts**, not ES modules, so they share one global
 scope and run in this order:
 
 ```text
-core.js → split.js → merge.js → tools.js → editor.js → app.js
+i18n-data.js → i18n.js → core.js → split.js → merge.js → tools.js → editor.js → app.js
 ```
 
-- `core.js` must stay first: it declares `S`, `G`, `esc`, `LIMITS`, the
-  validation helpers, progress, downloads and the Blob worker.
+- `i18n-data.js` and `i18n.js` must stay first: `t()` is used by validation and
+  every tool message.
+- `core.js` declares `S`, `G`, `esc`, `LIMITS`, the validation helpers, progress,
+  downloads and the Blob worker.
 - `app.js` must stay last: it runs `setTheme`, `onSplitModeChange`, installs the
   editor listeners and the keyboard shortcuts.
 - Every other file only defines functions or constants; it does not call code
@@ -187,6 +191,7 @@ theme.css → layout.css → components.css → editor.css → responsive.css
 | Topbar/hero/app-shell layout, media queries | `assets/css/layout.css` / `assets/css/responsive.css` |
 | Shared UI (cards, tabs, drop zones, buttons, toasts, forms) | `assets/css/components.css` |
 | Editor and signature pad UI | `assets/css/editor.css` |
+| i18n strings, language detection/switch, meta titles | `js/i18n-data.js` / `js/i18n.js` |
 | State, validation, a shared helper, theme/tabs/downloads | `js/core.js` |
 | Split | `js/split.js` |
 | Merge | `js/merge.js` |
@@ -301,6 +306,35 @@ Every tool shares one progress idiom: `showProgress('<tab>', true)` reveals
 the percentage and the ETA. `setAllBusy(true)` disables all buttons for the
 duration, which is the project's only concurrency control: one operation at a
 time, globally.
+
+### 5.8 Internationalization (English / Indonesian)
+
+The UI is bilingual without a framework or build step:
+
+- **English is the source language.** Markup uses `data-i18n="<exact English
+  text>"`, and JavaScript calls `t('<exact English text>', {vars})`.
+  `js/i18n-data.js` maps those English keys to Indonesian; a missing key falls
+  back to English.
+- `t(source, vars)` interpolates `{name}` style placeholders with `split/join`
+  (no regex, so values may contain `$`), and returns the source unchanged for
+  English.
+- `applyI18n()` walks `[data-i18n]`, `[data-i18n-placeholder]`,
+  `[data-i18n-title]` and `[data-i18n-aria]`, then updates `<title>`, the meta
+  description and the Open Graph/Twitter titles from `I18N_META`.
+- **Dynamic pieces re-render on switch.** `applyI18n()` calls
+  `refreshDynamicTranslations()` (defined in `app.js`), which rebuilds the split
+  page grid, parts summary, merge list, editor page label and props panel. Any
+  new JS-rendered UI must add itself to that hook.
+- **No storage.** The initial language comes from `?lang=` or
+  `navigator.language`; switching rewrites the query string with
+  `history.replaceState` (`?lang=id`). This keeps the "no localStorage/cookies"
+  guarantee and survives a reload without persisting anything.
+- `setLang(lang)` is global because inline handlers call it; `initLang()` runs
+  from `app.js` after every tool is defined.
+- Document language is kept in sync via `<html lang="…">`, and the switcher
+  keeps `aria-pressed` on `#langEn` / `#langId`.
+- Library error messages arrive in English; the app prefixes them with a
+  localized sentence (`t('Failed to …') + err.message`).
 
 ---
 
@@ -536,6 +570,7 @@ Practical guidance: prefer the Split tool's "one archive" modes over
 | 15 | Editor history | Undo/redo snapshots the object list only; page operations and metadata are one-way until reload | Could surprise users; documented in the Pages panel |
 | 16 | Editor text | Standard PDF fonts (WinAnsi/Latin) only; signatures are raster PNGs, so they are not vector or searchable | Acceptable for signing, not for non-Latin documents |
 | 17 | Editor performance | Page-by-page pdf.js rendering plus a full copy/flatten on save; a 300 MB file is warned about but still allowed | Large documents are slow and memory-hungry |
+| 18 | i18n | Keys are the English strings, so changing English copy without updating `js/i18n-data.js` silently falls back to English. `node tools/check-i18n.js` catches it, but is not wired into CI | Add the check to CI when one exists |
 
 ---
 
@@ -588,6 +623,8 @@ Practical guidance: prefer the Split tool's "one archive" modes over
 | Editor save | Output opens in a viewer; cover is opaque; rejects encrypted input until unlocked |
 | Validation | `.txt` renamed to `.pdf`, empty file, truncated PDF, >1.5 GB file, encrypted file in each tool |
 | Theme | Light/dark toggle swaps the palette and keeps the two theme buttons in sync |
+| Language | `EN`/`ID` switches title, meta, hero, tabs, panels, buttons, tooltips, footer and dynamic labels; `?lang=id` on load; `<html lang>` updates; no storage used |
+| Links | Support button opens <https://teer.id/rxdiag> in a new tab (`rel="noopener noreferrer"`); footer opens <https://rxdiag.my.id> |
 | Concurrency | Buttons disable during a run and re-enable after (success and failure) |
 
 ---
@@ -607,7 +644,8 @@ Practical guidance: prefer the Split tool's "one archive" modes over
   `theme-group`, plus legacy per-tool prefixes `mi-` (merge item) and `dz-`;
   state classes `.active`, `.selected`, `.deleted`, `.show`, `.dragover`,
   `.dragging`.
-- **Data attributes**: `data-orig`, `data-pos`, `data-idx`, `data-wd`.
+- **Data attributes**: `data-orig`, `data-pos`, `data-idx`, `data-wd`,
+  `data-i18n`, `data-i18n-placeholder`, `data-i18n-title`, `data-i18n-aria`.
 - **Commits**: `Add:`, `Fix:`, `Update:`, `Remove:`, `Docs:`, `Refactor:`.
 
 Detailed style, JavaScript, UI and validation rules live in

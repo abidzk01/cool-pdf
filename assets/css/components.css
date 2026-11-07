@@ -261,3 +261,10 @@ footer{
   border-radius:20px 20px 0 0;
 }
 footer strong{color:var(--text-m)}
+.footer-links{
+  display:flex;justify-content:center;align-items:center;gap:8px;
+  margin-top:10px;font-size:.78rem;
+}
+.footer-links a{color:var(--accent);text-decoration:none;font-weight:600}
+.footer-links a:hover{text-decoration:underline}
+.footer-dot{color:var(--text-x)}

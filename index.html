@@ -53,49 +53,54 @@
     <span class="brand-text">Rx<span class="brand-accent">PDF</span> Cool</span>
   </a>
   <div class="topbar-actions">
-    <span class="privacy-badge" title="Nothing is uploaded — every file is processed in this tab">🔒 100% private · files never leave your device</span>
-    <div class="theme-group" role="group" aria-label="Colour theme">
-      <button class="theme-btn active" id="btnLight" onclick="setTheme('light')" title="Light theme" aria-label="Light theme">☀️</button>
-      <button class="theme-btn" id="btnDark" onclick="setTheme('dark')" title="Dark theme" aria-label="Dark theme">🌙</button>
+    <a class="support-btn" href="https://teer.id/rxdiag" target="_blank" rel="noopener noreferrer" title="Support this project" data-i18n-title="Support this project">❤️ <span data-i18n="Support">Support</span></a>
+    <span class="privacy-badge" data-i18n="🔒 100% private · files never leave your device" data-i18n-title="Nothing is uploaded — every file is processed in this tab" title="Nothing is uploaded — every file is processed in this tab">🔒 100% private · files never leave your device</span>
+    <div class="theme-group" role="group" aria-label="Colour theme" data-i18n-aria="Colour theme">
+      <button class="theme-btn active" id="btnLight" onclick="setTheme('light')" data-i18n-title="Light theme" title="Light theme" aria-label="Light theme" data-i18n-aria="Light theme">☀️</button>
+      <button class="theme-btn" id="btnDark" onclick="setTheme('dark')" data-i18n-title="Dark theme" title="Dark theme" aria-label="Dark theme" data-i18n-aria="Dark theme">🌙</button>
+    </div>
+    <div class="lang-group" role="group" aria-label="Language">
+      <button class="lang-btn active" id="langEn" onclick="setLang('en')" aria-pressed="true" title="English">EN</button>
+      <button class="lang-btn" id="langId" onclick="setLang('id')" aria-pressed="false" title="Bahasa Indonesia">ID</button>
     </div>
   </div>
 </header>
 
 <!-- Hero: informative one-liner — the tools sit right below it -->
 <section class="hero">
-  <h1>The PDF toolkit <span class="g1">built for speed.</span></h1>
-  <p>Split, merge, compress, convert, watermark, number, sign, edit, protect and unlock PDFs — entirely in your browser. No uploads, no servers, no sign-up; every file is processed in this tab and discarded when you close it.</p>
+  <h1><span data-i18n="The PDF toolkit">The PDF toolkit</span> <span class="g1" data-i18n="built for speed.">built for speed.</span></h1>
+  <p data-i18n="Split, merge, compress, convert, watermark, number, sign, edit, protect and unlock PDFs — entirely in your browser. No uploads, no servers, no sign-up; every file is processed in this tab and discarded when you close it.">Split, merge, compress, convert, watermark, number, sign, edit, protect and unlock PDFs — entirely in your browser. No uploads, no servers, no sign-up; every file is processed in this tab and discarded when you close it.</p>
   <ul class="hero-facts">
-    <li>9 tools, one page</li>
-    <li>Up to 1.5 GB &amp; 3,000 pages</li>
-    <li>AES-256 password protection</li>
-    <li>Works offline</li>
-    <li>No tracking, no accounts</li>
+    <li data-i18n="9 tools, one page">9 tools, one page</li>
+    <li data-i18n="Up to 1.5 GB &amp; 3,000 pages">Up to 1.5 GB &amp; 3,000 pages</li>
+    <li data-i18n="AES-256 password protection">AES-256 password protection</li>
+    <li data-i18n="Works offline">Works offline</li>
+    <li data-i18n="No tracking, no accounts">No tracking, no accounts</li>
   </ul>
 </section>
 
 <!-- TABS -->
 <div class="tabs">
-  <button class="tab-btn active" onclick="switchTab('split')">✂️ Split</button>
-  <button class="tab-btn" onclick="switchTab('merge')">🔗 Merge</button>
-  <button class="tab-btn" onclick="switchTab('compress')">🗜️ Compress</button>
-  <button class="tab-btn" onclick="switchTab('images')">🖼️ To Images</button>
-  <button class="tab-btn" onclick="switchTab('watermark')">🔏 Watermark</button>
-  <button class="tab-btn" onclick="switchTab('pagenums')">🔢 Page Numbers</button>
-  <button class="tab-btn" onclick="switchTab('protect')">🔒 Protect</button>
-  <button class="tab-btn" onclick="switchTab('unlock')">🔓 Unlock</button>
-  <button class="tab-btn" onclick="switchTab('edit')">🖊️ Edit</button>
+  <button class="tab-btn active" onclick="switchTab('split')" data-i18n="✂️ Split">✂️ Split</button>
+  <button class="tab-btn" onclick="switchTab('merge')" data-i18n="🔗 Merge">🔗 Merge</button>
+  <button class="tab-btn" onclick="switchTab('compress')" data-i18n="🗜️ Compress">🗜️ Compress</button>
+  <button class="tab-btn" onclick="switchTab('images')" data-i18n="🖼️ To Images">🖼️ To Images</button>
+  <button class="tab-btn" onclick="switchTab('watermark')" data-i18n="🔏 Watermark">🔏 Watermark</button>
+  <button class="tab-btn" onclick="switchTab('pagenums')" data-i18n="🔢 Page Numbers">🔢 Page Numbers</button>
+  <button class="tab-btn" onclick="switchTab('protect')" data-i18n="🔒 Protect">🔒 Protect</button>
+  <button class="tab-btn" onclick="switchTab('unlock')" data-i18n="🔓 Unlock">🔓 Unlock</button>
+  <button class="tab-btn" onclick="switchTab('edit')" data-i18n="🖊️ Edit">🖊️ Edit</button>
 </div>
 
 <!-- ═══════════════════════════════ SPLIT PANEL ═══════════════════════════════ -->
 <div class="panel active" id="panel-split">
   <div class="card">
-    <h3>✂️ Split PDF</h3>
-    <div class="info-box">Extract, reorder, rotate or delete pages, then cut the document into parts. Use a quick split, or place custom cuts and download each part — or all of them as a single ZIP. Handles files up to 1.5 GB.</div>
+    <h3 data-i18n="✂️ Split PDF">✂️ Split PDF</h3>
+    <div class="info-box" data-i18n="Extract, reorder, rotate or delete pages, then cut the document into parts. Use a quick split, or place custom cuts and download each part — or all of them as a single ZIP. Handles files up to 1.5 GB.">Extract, reorder, rotate or delete pages, then cut the document into parts. Use a quick split, or place custom cuts and download each part — or all of them as a single ZIP. Handles files up to 1.5 GB.</div>
     <div class="drop-zone" id="dz-split" ondragover="dzOver(event,'split')" ondragleave="dzLeave('split')" ondrop="dzDrop(event,'split')">
       <span class="dz-icon">📂</span>
-      <h4>Drop your PDF here</h4>
-      <p>or click to browse — max 1.5 GB</p>
+      <h4 data-i18n="Drop your PDF here">Drop your PDF here</h4>
+      <p data-i18n="or click to browse — max 1.5 GB">or click to browse — max 1.5 GB</p>
       <input type="file" id="fi-split" accept=".pdf" onchange="loadSplitFile(this.files[0])">
     </div>
   </div>
@@ -104,51 +109,51 @@
 
     <!-- Quick cut suggestions -->
     <div class="cut-suggestions" id="cut-suggestions">
-      <span class="cs-label">✂️ Quick split:</span>
-      <button class="cut-sug-btn" onclick="suggestCutHalf()">Split in half</button>
-      <button class="cut-sug-btn" onclick="suggestCutThirds()">Into 3 parts</button>
-      <button class="cut-sug-btn" onclick="suggestCutQuarters()">Into 4 parts</button>
-      <button class="cut-sug-btn" onclick="suggestCutEvery(1)">Every page</button>
-      <button class="cut-sug-btn" onclick="suggestCutEvery(5)">Every 5 pages</button>
-      <button class="cut-sug-btn" onclick="suggestCutEvery(10)">Every 10 pages</button>
-      <button class="cut-sug-btn" onclick="clearAllCuts()" style="color:var(--danger);border-color:currentColor">Clear cuts</button>
+      <span class="cs-label" data-i18n="✂️ Quick split:">✂️ Quick split:</span>
+      <button class="cut-sug-btn" onclick="suggestCutHalf()" data-i18n="Split in half">Split in half</button>
+      <button class="cut-sug-btn" onclick="suggestCutThirds()" data-i18n="Into 3 parts">Into 3 parts</button>
+      <button class="cut-sug-btn" onclick="suggestCutQuarters()" data-i18n="Into 4 parts">Into 4 parts</button>
+      <button class="cut-sug-btn" onclick="suggestCutEvery(1)" data-i18n="Every page">Every page</button>
+      <button class="cut-sug-btn" onclick="suggestCutEvery(5)" data-i18n="Every 5 pages">Every 5 pages</button>
+      <button class="cut-sug-btn" onclick="suggestCutEvery(10)" data-i18n="Every 10 pages">Every 10 pages</button>
+      <button class="cut-sug-btn" onclick="clearAllCuts()" style="color:var(--danger);border-color:currentColor" data-i18n="Clear cuts">Clear cuts</button>
     </div>
 
     <!-- Parts preview (shows after cuts are placed) -->
     <div class="parts-summary" id="parts-summary" style="display:none"></div>
 
     <h3 style="display:flex;align-items:center;gap:8px;justify-content:space-between;flex-wrap:wrap">
-      <span>📋 Page Manager</span>
-      <span style="font-size:.72rem;font-weight:500;color:var(--text-m)">Click between pages to add ✂️ cuts</span>
+      <span data-i18n="📋 Page Manager">📋 Page Manager</span>
+      <span style="font-size:.72rem;font-weight:500;color:var(--text-m)" data-i18n="Click between pages to add ✂️ cuts">Click between pages to add ✂️ cuts</span>
     </h3>
     <div class="pages-toolbar">
-      <button class="btn btn-ghost btn-sm" onclick="selectAll()">Select All</button>
-      <button class="btn btn-ghost btn-sm" onclick="selectNone()">Deselect</button>
-      <button class="btn btn-ghost btn-sm" onclick="invertSel()">Invert</button>
-      <button class="btn btn-warning btn-sm" onclick="rotateSelected()">↻ Rotate</button>
-      <button class="btn btn-danger btn-sm" onclick="deleteSelected()">🗑 Delete</button>
-      <button class="btn btn-ghost btn-sm" onclick="restoreDeleted()">↩ Restore</button>
-      <span id="sel-count" style="margin-left:auto;font-size:.78rem;color:var(--text-m)">0 selected</span>
+      <button class="btn btn-ghost btn-sm" onclick="selectAll()" data-i18n="Select All">Select All</button>
+      <button class="btn btn-ghost btn-sm" onclick="selectNone()" data-i18n="Deselect">Deselect</button>
+      <button class="btn btn-ghost btn-sm" onclick="invertSel()" data-i18n="Invert">Invert</button>
+      <button class="btn btn-warning btn-sm" onclick="rotateSelected()" data-i18n="↻ Rotate">↻ Rotate</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteSelected()" data-i18n="🗑 Delete">🗑 Delete</button>
+      <button class="btn btn-ghost btn-sm" onclick="restoreDeleted()" data-i18n="↩ Restore">↩ Restore</button>
+      <span id="sel-count" style="margin-left:auto;font-size:.78rem;color:var(--text-m)" data-i18n="0 selected">0 selected</span>
     </div>
     <div class="page-grid" id="page-grid"></div>
 
     <div class="form-row" style="margin-top:8px">
       <div class="form-group">
-        <label>Split Mode</label>
+        <label data-i18n="Split Mode">Split Mode</label>
         <select id="split-mode" onchange="onSplitModeChange()">
-          <option value="cuts">✂️ Visual cuts (above)</option>
-          <option value="selected">Selected pages → one PDF</option>
-          <option value="each">Each page → separate PDF (ZIP)</option>
-          <option value="range">Custom range</option>
-          <option value="every">Every N pages</option>
+          <option value="cuts" data-i18n="✂️ Visual cuts (above)">✂️ Visual cuts (above)</option>
+          <option value="selected" data-i18n="Selected pages → one PDF">Selected pages → one PDF</option>
+          <option value="each" data-i18n="Each page → separate PDF (ZIP)">Each page → separate PDF (ZIP)</option>
+          <option value="range" data-i18n="Custom range">Custom range</option>
+          <option value="every" data-i18n="Every N pages">Every N pages</option>
         </select>
       </div>
       <div class="form-group" id="fg-range" style="display:none">
-        <label>Range (e.g. 1-3,5,7-9)</label>
+        <label data-i18n="Range (e.g. 1-3,5,7-9)">Range (e.g. 1-3,5,7-9)</label>
         <input type="text" id="split-range" placeholder="1-3,5,7-9">
       </div>
       <div class="form-group" id="fg-every" style="display:none">
-        <label>N pages per chunk</label>
+        <label data-i18n="N pages per chunk">N pages per chunk</label>
         <input type="number" id="split-every" value="2" min="1" style="width:100px">
       </div>
     </div>
@@ -163,8 +168,8 @@
     </div>
 
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
-      <button class="btn btn-primary" id="btn-split" onclick="startSplit()">⚡ Split PDF</button>
-      <button class="btn btn-ghost" onclick="clearSplit()">✕ Clear</button>
+      <button class="btn btn-primary" id="btn-split" onclick="startSplit()" data-i18n="⚡ Split PDF">⚡ Split PDF</button>
+      <button class="btn btn-ghost" onclick="clearSplit()" data-i18n="✕ Clear">✕ Clear</button>
     </div>
   </div>
 </div>
@@ -172,18 +177,18 @@
 <!-- ═══════════════════════════════ MERGE PANEL ═══════════════════════════════ -->
 <div class="panel" id="panel-merge">
   <div class="card">
-    <h3>🔗 Merge PDFs</h3>
-    <div class="info-box">Combine two or more PDFs into one file. Drop them in any order, drag the list to set the sequence, and every page is copied over exactly as it is. Up to 50 files per merge.</div>
+    <h3 data-i18n="🔗 Merge PDFs">🔗 Merge PDFs</h3>
+    <div class="info-box" data-i18n="Combine two or more PDFs into one file. Drop them in any order, drag the list to set the sequence, and every page is copied over exactly as it is. Up to 50 files per merge.">Combine two or more PDFs into one file. Drop them in any order, drag the list to set the sequence, and every page is copied over exactly as it is. Up to 50 files per merge.</div>
     <div class="drop-zone" id="dz-merge" ondragover="dzOver(event,'merge')" ondragleave="dzLeave('merge')" ondrop="dzDrop(event,'merge')">
       <span class="dz-icon">📂</span>
-      <h4>Drop PDFs here</h4>
-      <p>or click to browse — multiple files supported</p>
+      <h4 data-i18n="Drop PDFs here">Drop PDFs here</h4>
+      <p data-i18n="or click to browse — multiple files supported">or click to browse — multiple files supported</p>
       <input type="file" id="fi-merge" accept=".pdf" multiple onchange="addMergeFiles(this.files)">
     </div>
   </div>
 
   <div class="card" id="merge-controls" style="display:none">
-    <h3>📋 Files to Merge <span style="font-size:.8rem;color:var(--text-m);font-weight:400">(drag to reorder)</span></h3>
+    <h3><span data-i18n="📋 Files to Merge">📋 Files to Merge</span> <span style="font-size:.8rem;color:var(--text-m);font-weight:400" data-i18n="(drag to reorder)">(drag to reorder)</span></h3>
     <div class="merge-list" id="merge-list"></div>
     <div class="progress-wrap" id="pw-merge">
       <div class="progress-bar"><div class="progress-fill" id="pf-merge"></div></div>
@@ -194,8 +199,8 @@
       </div>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn btn-primary" id="btn-merge" onclick="startMerge()">⚡ Merge All</button>
-      <button class="btn btn-ghost btn-sm" onclick="clearMerge()">✕ Clear</button>
+      <button class="btn btn-primary" id="btn-merge" onclick="startMerge()" data-i18n="⚡ Merge All">⚡ Merge All</button>
+      <button class="btn btn-ghost btn-sm" onclick="clearMerge()" data-i18n="✕ Clear">✕ Clear</button>
     </div>
   </div>
 </div>
@@ -203,12 +208,12 @@
 <!-- ═══════════════════════════════ COMPRESS PANEL ═══════════════════════════ -->
 <div class="panel" id="panel-compress">
   <div class="card">
-    <h3>🗜️ Compress PDF</h3>
-    <div class="info-box">Removes redundant objects and compresses streams. Works best on PDFs with many images or embedded fonts. Results vary by file.</div>
+    <h3 data-i18n="🗜️ Compress PDF">🗜️ Compress PDF</h3>
+    <div class="info-box" data-i18n="Removes redundant objects and compresses streams. Works best on PDFs with many images or embedded fonts. Results vary by file.">Removes redundant objects and compresses streams. Works best on PDFs with many images or embedded fonts. Results vary by file.</div>
     <div class="drop-zone" id="dz-compress" ondragover="dzOver(event,'compress')" ondragleave="dzLeave('compress')" ondrop="dzDrop(event,'compress')">
       <span class="dz-icon">📦</span>
-      <h4>Drop PDF to compress</h4>
-      <p>or click to browse</p>
+      <h4 data-i18n="Drop PDF to compress">Drop PDF to compress</h4>
+      <p data-i18n="or click to browse">or click to browse</p>
       <input type="file" id="fi-compress" accept=".pdf" onchange="startCompress(this.files[0])">
     </div>
     <div class="progress-wrap" id="pw-compress">
@@ -221,26 +226,26 @@
 <!-- ═══════════════════════════════ IMAGES PANEL ══════════════════════════════ -->
 <div class="panel" id="panel-images">
   <div class="card">
-    <h3>🖼️ PDF → Images</h3>
-    <div class="info-box">Converts each PDF page to a JPEG image. All images are bundled into a ZIP for download.</div>
+    <h3 data-i18n="🖼️ PDF → Images">🖼️ PDF → Images</h3>
+    <div class="info-box" data-i18n="Converts each PDF page to a JPEG image. All images are bundled into a ZIP for download.">Converts each PDF page to a JPEG image. All images are bundled into a ZIP for download.</div>
     <div class="drop-zone" id="dz-images" ondragover="dzOver(event,'images')" ondragleave="dzLeave('images')" ondrop="dzDrop(event,'images')">
       <span class="dz-icon">🖼️</span>
-      <h4>Drop PDF to convert</h4>
-      <p>or click to browse</p>
+      <h4 data-i18n="Drop PDF to convert">Drop PDF to convert</h4>
+      <p data-i18n="or click to browse">or click to browse</p>
       <input type="file" id="fi-images" accept=".pdf" onchange="startImages(this.files[0])">
     </div>
     <div class="form-row" style="margin-top:16px">
       <div class="form-group">
-        <label>Scale (DPI factor)</label>
+        <label data-i18n="Scale (DPI factor)">Scale (DPI factor)</label>
         <select id="img-scale">
-          <option value="1">72 DPI (fast)</option>
+          <option value="1" data-i18n="72 DPI (fast)">72 DPI (fast)</option>
           <option value="1.5">108 DPI</option>
-          <option value="2" selected>144 DPI (recommended)</option>
-          <option value="3">216 DPI (high quality)</option>
+          <option value="2" selected data-i18n="144 DPI (recommended)">144 DPI (recommended)</option>
+          <option value="3" data-i18n="216 DPI (high quality)">216 DPI (high quality)</option>
         </select>
       </div>
       <div class="form-group">
-        <label>Format</label>
+        <label data-i18n="Format">Format</label>
         <select id="img-format">
           <option value="jpeg">JPEG</option>
           <option value="png">PNG</option>
@@ -257,42 +262,42 @@
 <!-- ═══════════════════════════════ WATERMARK PANEL ══════════════════════════ -->
 <div class="panel" id="panel-watermark">
   <div class="card">
-    <h3>🔏 Add Watermark</h3>
-    <div class="info-box">Stamp text across every page. Pick the size, colour, opacity and position; the centre position is drawn diagonally. Text is drawn with the built-in Helvetica font.</div>
+    <h3 data-i18n="🔏 Add Watermark">🔏 Add Watermark</h3>
+    <div class="info-box" data-i18n="Stamp text across every page. Pick the size, colour, opacity and position; the centre position is drawn diagonally. Text is drawn with the built-in Helvetica font.">Stamp text across every page. Pick the size, colour, opacity and position; the centre position is drawn diagonally. Text is drawn with the built-in Helvetica font.</div>
     <div class="drop-zone" id="dz-watermark" ondragover="dzOver(event,'watermark')" ondragleave="dzLeave('watermark')" ondrop="dzDrop(event,'watermark')">
       <span class="dz-icon">📄</span>
-      <h4>Drop PDF to watermark</h4>
-      <p>or click to browse</p>
+      <h4 data-i18n="Drop PDF to watermark">Drop PDF to watermark</h4>
+      <p data-i18n="or click to browse">or click to browse</p>
       <input type="file" id="fi-watermark" accept=".pdf" onchange="loadWatermarkFile(this.files[0])">
     </div>
     <div id="watermark-opts" style="display:none;margin-top:18px">
       <div class="form-row">
         <div class="form-group" style="flex:1">
-          <label>Watermark Text</label>
-          <input type="text" id="wm-text" value="CONFIDENTIAL" placeholder="Enter watermark text">
+          <label data-i18n="Watermark Text">Watermark Text</label>
+          <input type="text" id="wm-text" value="CONFIDENTIAL" placeholder="Enter watermark text" data-i18n-placeholder="Enter watermark text">
         </div>
         <div class="form-group">
-          <label>Font Size</label>
+          <label data-i18n="Font Size">Font Size</label>
           <input type="number" id="wm-size" value="48" min="10" max="200" style="width:90px">
         </div>
         <div class="form-group">
-          <label>Color</label>
+          <label data-i18n="Color">Color</label>
           <input type="color" id="wm-color" value="#6366f1" style="width:60px;height:38px;padding:2px;border-radius:8px;border:1.5px solid var(--inp-b);background:var(--inp)">
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>Opacity %</label>
+          <label data-i18n="Opacity %">Opacity %</label>
           <input type="number" id="wm-opacity" value="30" min="5" max="100" style="width:90px">
         </div>
         <div class="form-group">
-          <label>Position</label>
+          <label data-i18n="Position">Position</label>
           <select id="wm-position">
-            <option value="center">Center (diagonal)</option>
-            <option value="top-left">Top Left</option>
-            <option value="top-right">Top Right</option>
-            <option value="bottom-left">Bottom Left</option>
-            <option value="bottom-right">Bottom Right</option>
+            <option value="center" data-i18n="Center (diagonal)">Center (diagonal)</option>
+            <option value="top-left" data-i18n="Top Left">Top Left</option>
+            <option value="top-right" data-i18n="Top Right">Top Right</option>
+            <option value="bottom-left" data-i18n="Bottom Left">Bottom Left</option>
+            <option value="bottom-right" data-i18n="Bottom Right">Bottom Right</option>
           </select>
         </div>
       </div>
@@ -300,7 +305,7 @@
         <div class="progress-bar"><div class="progress-fill" id="pf-watermark"></div></div>
         <div class="progress-meta"><span id="ps-watermark">0/0</span><span id="pp-watermark">0%</span><span id="pe-watermark"></span></div>
       </div>
-      <button class="btn btn-primary" onclick="startWatermark()">🔏 Add Watermark &amp; Download</button>
+      <button class="btn btn-primary" onclick="startWatermark()" data-i18n="🔏 Add Watermark &amp; Download">🔏 Add Watermark &amp; Download</button>
     </div>
   </div>
 </div>
@@ -308,32 +313,32 @@
 <!-- ═══════════════════════════════ PAGE NUMBERS PANEL ═══════════════════════ -->
 <div class="panel" id="panel-pagenums">
   <div class="card">
-    <h3>🔢 Add Page Numbers</h3>
-    <div class="info-box">Print a number on every page. Choose the first number, one of five positions and the font size.</div>
+    <h3 data-i18n="🔢 Add Page Numbers">🔢 Add Page Numbers</h3>
+    <div class="info-box" data-i18n="Print a number on every page. Choose the first number, one of five positions and the font size.">Print a number on every page. Choose the first number, one of five positions and the font size.</div>
     <div class="drop-zone" id="dz-pagenums" ondragover="dzOver(event,'pagenums')" ondragleave="dzLeave('pagenums')" ondrop="dzDrop(event,'pagenums')">
       <span class="dz-icon">🔢</span>
-      <h4>Drop PDF to number</h4>
-      <p>or click to browse</p>
+      <h4 data-i18n="Drop PDF to number">Drop PDF to number</h4>
+      <p data-i18n="or click to browse">or click to browse</p>
       <input type="file" id="fi-pagenums" accept=".pdf" onchange="loadPageNumFile(this.files[0])">
     </div>
     <div id="pagenums-opts" style="display:none;margin-top:18px">
       <div class="form-row">
         <div class="form-group">
-          <label>Start Number</label>
+          <label data-i18n="Start Number">Start Number</label>
           <input type="number" id="pn-start" value="1" min="1" style="width:100px">
         </div>
         <div class="form-group">
-          <label>Position</label>
+          <label data-i18n="Position">Position</label>
           <select id="pn-position">
-            <option value="bottom-center">Bottom Center</option>
-            <option value="bottom-right">Bottom Right</option>
-            <option value="bottom-left">Bottom Left</option>
-            <option value="top-center">Top Center</option>
-            <option value="top-right">Top Right</option>
+            <option value="bottom-center" data-i18n="Bottom Center">Bottom Center</option>
+            <option value="bottom-right" data-i18n="Bottom Right">Bottom Right</option>
+            <option value="bottom-left" data-i18n="Bottom Left">Bottom Left</option>
+            <option value="top-center" data-i18n="Top Center">Top Center</option>
+            <option value="top-right" data-i18n="Top Right">Top Right</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Font Size</label>
+          <label data-i18n="Font Size">Font Size</label>
           <input type="number" id="pn-size" value="12" min="6" max="36" style="width:90px">
         </div>
       </div>
@@ -341,7 +346,7 @@
         <div class="progress-bar"><div class="progress-fill" id="pf-pagenums"></div></div>
         <div class="progress-meta"><span id="ps-pagenums">0/0</span><span id="pp-pagenums">0%</span><span id="pe-pagenums"></span></div>
       </div>
-      <button class="btn btn-primary" onclick="startPageNums()">🔢 Add Numbers &amp; Download</button>
+      <button class="btn btn-primary" onclick="startPageNums()" data-i18n="🔢 Add Numbers &amp; Download">🔢 Add Numbers &amp; Download</button>
     </div>
   </div>
 </div>
@@ -349,30 +354,30 @@
 <!-- ═══════════════════════════════ PROTECT PANEL ════════════════════════════ -->
 <div class="panel" id="panel-protect">
   <div class="card">
-    <h3>🔒 Password Protect PDF</h3>
-    <div class="info-box">Encrypts the PDF with AES-256. The password is never sent anywhere — all processing happens in your browser.</div>
+    <h3 data-i18n="🔒 Password Protect PDF">🔒 Password Protect PDF</h3>
+    <div class="info-box" data-i18n="Encrypts the PDF with AES-256. The password is never sent anywhere — all processing happens in your browser.">Encrypts the PDF with AES-256. The password is never sent anywhere — all processing happens in your browser.</div>
     <div class="drop-zone" id="dz-protect" ondragover="dzOver(event,'protect')" ondragleave="dzLeave('protect')" ondrop="dzDrop(event,'protect')">
       <span class="dz-icon">🔒</span>
-      <h4>Drop PDF to protect</h4>
-      <p>or click to browse</p>
+      <h4 data-i18n="Drop PDF to protect">Drop PDF to protect</h4>
+      <p data-i18n="or click to browse">or click to browse</p>
       <input type="file" id="fi-protect" accept=".pdf" onchange="loadProtectFile(this.files[0])">
     </div>
     <div id="protect-opts" style="display:none;margin-top:18px">
       <div class="form-row">
         <div class="form-group" style="flex:1">
-          <label>Password</label>
-          <input type="password" id="prot-pass" placeholder="Enter password" autocomplete="new-password">
+          <label data-i18n="Password">Password</label>
+          <input type="password" id="prot-pass" placeholder="Enter password" autocomplete="new-password" data-i18n-placeholder="Enter password">
         </div>
         <div class="form-group" style="flex:1">
-          <label>Confirm Password</label>
-          <input type="password" id="prot-pass2" placeholder="Confirm password" autocomplete="new-password">
+          <label data-i18n="Confirm Password">Confirm Password</label>
+          <input type="password" id="prot-pass2" placeholder="Confirm password" autocomplete="new-password" data-i18n-placeholder="Confirm password">
         </div>
       </div>
       <div class="progress-wrap" id="pw-protect">
         <div class="progress-bar"><div class="progress-fill" id="pf-protect"></div></div>
         <div class="progress-meta"><span id="ps-protect"></span><span id="pp-protect"></span><span id="pe-protect"></span></div>
       </div>
-      <button class="btn btn-primary" onclick="startProtect()">🔒 Encrypt &amp; Download</button>
+      <button class="btn btn-primary" onclick="startProtect()" data-i18n="🔒 Encrypt &amp; Download">🔒 Encrypt &amp; Download</button>
     </div>
   </div>
 </div>
@@ -380,26 +385,26 @@
 <!-- ═══════════════════════════════ UNLOCK PANEL ═════════════════════════════ -->
 <div class="panel" id="panel-unlock">
   <div class="card">
-    <h3>🔓 Unlock PDF</h3>
-    <div class="info-box">Removes the password from a PDF you own. You must know the current password to unlock it.</div>
+    <h3 data-i18n="🔓 Unlock PDF">🔓 Unlock PDF</h3>
+    <div class="info-box" data-i18n="Removes the password from a PDF you own. You must know the current password to unlock it.">Removes the password from a PDF you own. You must know the current password to unlock it.</div>
     <div class="drop-zone" id="dz-unlock" ondragover="dzOver(event,'unlock')" ondragleave="dzLeave('unlock')" ondrop="dzDrop(event,'unlock')">
       <span class="dz-icon">🔓</span>
-      <h4>Drop protected PDF</h4>
-      <p>or click to browse</p>
+      <h4 data-i18n="Drop protected PDF">Drop protected PDF</h4>
+      <p data-i18n="or click to browse">or click to browse</p>
       <input type="file" id="fi-unlock" accept=".pdf" onchange="loadUnlockFile(this.files[0])">
     </div>
     <div id="unlock-opts" style="display:none;margin-top:18px">
       <div class="form-row">
         <div class="form-group" style="flex:1">
-          <label>Current Password</label>
-          <input type="password" id="unlock-pass" placeholder="Enter current password">
+          <label data-i18n="Current Password">Current Password</label>
+          <input type="password" id="unlock-pass" placeholder="Enter current password" data-i18n-placeholder="Enter current password">
         </div>
       </div>
       <div class="progress-wrap" id="pw-unlock">
         <div class="progress-bar"><div class="progress-fill" id="pf-unlock"></div></div>
         <div class="progress-meta"><span id="ps-unlock"></span><span id="pp-unlock"></span><span id="pe-unlock"></span></div>
       </div>
-      <button class="btn btn-primary" onclick="startUnlock()">🔓 Unlock &amp; Download</button>
+      <button class="btn btn-primary" onclick="startUnlock()" data-i18n="🔓 Unlock &amp; Download">🔓 Unlock &amp; Download</button>
     </div>
   </div>
 </div>
@@ -407,62 +412,62 @@
 <!-- ═══════════════════════════════ EDIT PANEL ═══════════════════════════════ -->
 <div class="panel" id="panel-edit">
   <div class="card">
-    <h3>🖊️ Edit PDF</h3>
-    <div class="info-box">Sign, add text, images, shapes, freehand ink, highlights or cover boxes on any page. You can also rotate, duplicate, insert or delete pages and edit metadata. Edits are drawn into a copy of the file; nothing is uploaded.</div>
+    <h3 data-i18n="🖊️ Edit PDF">🖊️ Edit PDF</h3>
+    <div class="info-box" data-i18n="Sign, add text, images, shapes, freehand ink, highlights or cover boxes on any page. You can also rotate, duplicate, insert or delete pages and edit metadata. Edits are drawn into a copy of the file; nothing is uploaded.">Sign, add text, images, shapes, freehand ink, highlights or cover boxes on any page. You can also rotate, duplicate, insert or delete pages and edit metadata. Edits are drawn into a copy of the file; nothing is uploaded.</div>
     <div class="drop-zone" id="dz-edit" ondragover="dzOver(event,'edit')" ondragleave="dzLeave('edit')" ondrop="dzDrop(event,'edit')">
       <span class="dz-icon">🖊️</span>
-      <h4>Drop a PDF to edit</h4>
-      <p>or click to browse — max 1.5 GB</p>
+      <h4 data-i18n="Drop a PDF to edit">Drop a PDF to edit</h4>
+      <p data-i18n="or click to browse — max 1.5 GB">or click to browse — max 1.5 GB</p>
       <input type="file" id="fi-edit" accept=".pdf" onchange="loadEditFile(this.files[0])">
     </div>
   </div>
 
   <div class="card" id="edit-workspace" style="display:none">
     <div class="editor-toolbar" id="edit-toolbar">
-      <button class="tool-btn active" data-tool="select" onclick="setEditTool('select')" title="Select, move and resize objects">🖱️ Select</button>
-      <button class="tool-btn" data-tool="text" onclick="setEditTool('text')" title="Add text">🅣 Text</button>
-      <button class="tool-btn" onclick="openSignPad()" title="Draw a signature">✍️ Sign</button>
-      <button class="tool-btn" onclick="G('fi-edit-image').click()" title="Add an image">🖼️ Image</button>
+      <button class="tool-btn active" data-tool="select" onclick="setEditTool('select')" title="Select, move and resize objects" data-i18n="🖱️ Select" data-i18n-title="Select, move and resize objects">🖱️ Select</button>
+      <button class="tool-btn" data-tool="text" onclick="setEditTool('text')" title="Add text" data-i18n="🅣 Text" data-i18n-title="Add text">🅣 Text</button>
+      <button class="tool-btn" onclick="openSignPad()" title="Draw a signature" data-i18n="✍️ Sign" data-i18n-title="Draw a signature">✍️ Sign</button>
+      <button class="tool-btn" onclick="G('fi-edit-image').click()" title="Add an image" data-i18n="🖼️ Image" data-i18n-title="Add an image">🖼️ Image</button>
       <span class="editor-sep"></span>
-      <button class="tool-btn" data-tool="rect" onclick="setEditTool('rect')" title="Rectangle">▭ Rect</button>
-      <button class="tool-btn" data-tool="ellipse" onclick="setEditTool('ellipse')" title="Ellipse">◯ Ellipse</button>
-      <button class="tool-btn" data-tool="line" onclick="setEditTool('line')" title="Line">╱ Line</button>
-      <button class="tool-btn" data-tool="ink" onclick="setEditTool('ink')" title="Freehand ink">🖊️ Ink</button>
-      <button class="tool-btn" data-tool="highlight" onclick="setEditTool('highlight')" title="Highlight area">🟨 Highlight</button>
-      <button class="tool-btn" data-tool="cover" onclick="setEditTool('cover')" title="Cover area with white (not redaction)">⬜ Cover</button>
+      <button class="tool-btn" data-tool="rect" onclick="setEditTool('rect')" title="Rectangle" data-i18n="▭ Rect" data-i18n-title="Rectangle">▭ Rect</button>
+      <button class="tool-btn" data-tool="ellipse" onclick="setEditTool('ellipse')" title="Ellipse" data-i18n="◯ Ellipse" data-i18n-title="Ellipse">◯ Ellipse</button>
+      <button class="tool-btn" data-tool="line" onclick="setEditTool('line')" title="Line" data-i18n="╱ Line" data-i18n-title="Line">╱ Line</button>
+      <button class="tool-btn" data-tool="ink" onclick="setEditTool('ink')" title="Freehand ink" data-i18n="🖊️ Ink" data-i18n-title="Freehand ink">🖊️ Ink</button>
+      <button class="tool-btn" data-tool="highlight" onclick="setEditTool('highlight')" title="Highlight area" data-i18n="🟨 Highlight" data-i18n-title="Highlight area">🟨 Highlight</button>
+      <button class="tool-btn" data-tool="cover" onclick="setEditTool('cover')" title="Cover area with white (not redaction)" data-i18n="⬜ Cover" data-i18n-title="Cover area with white (not redaction)">⬜ Cover</button>
       <span class="editor-sep"></span>
-      <button class="tool-btn" onclick="editUndo()" id="edit-undo" title="Undo (Ctrl+Z)" disabled>↶</button>
-      <button class="tool-btn" onclick="editRedo()" id="edit-redo" title="Redo (Ctrl+Shift+Z)" disabled>↷</button>
-      <button class="tool-btn" onclick="editDeleteSelected()" title="Delete selected object">🗑</button>
+      <button class="tool-btn" onclick="editUndo()" id="edit-undo" title="Undo (Ctrl+Z)" disabled data-i18n-title="Undo (Ctrl+Z)">↶</button>
+      <button class="tool-btn" onclick="editRedo()" id="edit-redo" title="Redo (Ctrl+Shift+Z)" disabled data-i18n-title="Redo (Ctrl+Shift+Z)">↷</button>
+      <button class="tool-btn" onclick="editDeleteSelected()" title="Delete selected object" data-i18n-title="Delete selected object">🗑</button>
       <span class="editor-sep"></span>
-      <button class="tool-btn" onclick="editTogglePanel('pages')" title="Page operations">📄 Pages</button>
-      <button class="tool-btn" onclick="editTogglePanel('meta')" title="Document metadata">🏷️ Metadata</button>
+      <button class="tool-btn" onclick="editTogglePanel('pages')" title="Page operations" data-i18n="📄 Pages" data-i18n-title="Page operations">📄 Pages</button>
+      <button class="tool-btn" onclick="editTogglePanel('meta')" title="Document metadata" data-i18n="🏷️ Metadata" data-i18n-title="Document metadata">🏷️ Metadata</button>
     </div>
 
     <div class="editor-props" id="edit-props" style="display:none">
       <span class="ed-name" id="edit-props-name"></span>
-      <label>Opacity <input type="range" id="edit-opacity" min="10" max="100" oninput="editProp('opacity',this.value)"></label>
-      <label>Colour <input type="color" id="edit-color" oninput="editProp('color',this.value)"></label>
-      <label id="edit-size-wrap">Size <input type="number" id="edit-size" min="1" max="96" oninput="editProp('size',this.value)"></label>
-      <button class="tool-btn" onclick="editEditText()" id="edit-text-btn" style="display:none">✎ Edit text</button>
-      <button class="tool-btn" onclick="editDuplicateSelected()" title="Duplicate">⧉</button>
-      <button class="tool-btn" onclick="editLayer(1)" title="Bring forward">↑</button>
-      <button class="tool-btn" onclick="editLayer(-1)" title="Send backward">↓</button>
-      <button class="tool-btn" onclick="editDeleteSelected()" title="Delete">🗑</button>
+      <label><span data-i18n="Opacity">Opacity</span> <input type="range" id="edit-opacity" min="10" max="100" oninput="editProp('opacity',this.value)"></label>
+      <label><span data-i18n="Colour">Colour</span> <input type="color" id="edit-color" oninput="editProp('color',this.value)"></label>
+      <label id="edit-size-wrap"><span data-i18n="Size">Size</span> <input type="number" id="edit-size" min="1" max="96" oninput="editProp('size',this.value)"></label>
+      <button class="tool-btn" onclick="editEditText()" id="edit-text-btn" style="display:none" data-i18n="✎ Edit text">✎ Edit text</button>
+      <button class="tool-btn" onclick="editDuplicateSelected()" title="Duplicate" data-i18n-title="Duplicate">⧉</button>
+      <button class="tool-btn" onclick="editLayer(1)" title="Bring forward" data-i18n-title="Bring forward">↑</button>
+      <button class="tool-btn" onclick="editLayer(-1)" title="Send backward" data-i18n-title="Send backward">↓</button>
+      <button class="tool-btn" onclick="editDeleteSelected()" title="Delete" data-i18n-title="Delete">🗑</button>
     </div>
 
     <div class="editor-topbar">
-      <button onclick="editPage(-1)" title="Previous page">◀</button>
+      <button onclick="editPage(-1)" title="Previous page" data-i18n-title="Previous page">◀</button>
       <span class="ed-label" id="edit-page-label">1 / 1</span>
-      <button onclick="editPage(1)" title="Next page">▶</button>
+      <button onclick="editPage(1)" title="Next page" data-i18n-title="Next page">▶</button>
       <span class="editor-sep"></span>
-      <button onclick="editZoom(-1)" title="Zoom out">−</button>
+      <button onclick="editZoom(-1)" title="Zoom out" data-i18n-title="Zoom out">−</button>
       <span class="ed-label" id="edit-zoom-label">100%</span>
-      <button onclick="editZoom(1)" title="Zoom in">+</button>
-      <button onclick="editFit()" title="Fit to width">Fit</button>
+      <button onclick="editZoom(1)" title="Zoom in" data-i18n-title="Zoom in">+</button>
+      <button onclick="editFit()" title="Fit to width" data-i18n="Fit" data-i18n-title="Fit to width">Fit</button>
       <span class="editor-sep"></span>
-      <button onclick="clearEdit()" title="Close this file">✕ Clear</button>
-      <button class="btn btn-primary btn-sm" onclick="editSave()">💾 Save &amp; Download</button>
+      <button onclick="clearEdit()" title="Close this file" data-i18n="✕ Clear" data-i18n-title="Close this file">✕ Clear</button>
+      <button class="btn btn-primary btn-sm" onclick="editSave()" data-i18n="💾 Save &amp; Download">💾 Save &amp; Download</button>
     </div>
 
     <div class="editor-stage" id="edit-stage">
@@ -471,11 +476,11 @@
         <div class="editor-layer" id="edit-layer"></div>
       </div>
     </div>
-    <div class="editor-empty" id="edit-empty" style="display:none">Pick a tool above to add a signature, text, image, shape or ink.</div>
+    <div class="editor-empty" id="edit-empty" style="display:none" data-i18n="Pick a tool above to add a signature, text, image, shape or ink.">Pick a tool above to add a signature, text, image, shape or ink.</div>
 
     <div class="editor-panel" id="edit-text-panel" style="display:none">
-      <h3>Add text</h3>
-      <textarea id="edit-text-value" rows="3" maxlength="500" placeholder="Type the text to place on the page"></textarea>
+      <h3 data-i18n="Add text">Add text</h3>
+      <textarea id="edit-text-value" rows="3" maxlength="500" placeholder="Type the text to place on the page" data-i18n-placeholder="Type the text to place on the page"></textarea>
       <div class="form-row" style="margin-top:8px">
         <div class="form-group"><label>Font</label>
           <select id="edit-text-font">
@@ -484,42 +489,42 @@
             <option value="Courier">Courier</option>
           </select>
         </div>
-        <div class="form-group"><label>Size</label><input type="number" id="edit-text-size" min="6" max="96" value="18" style="width:80px"></div>
-        <div class="form-group"><label>Colour</label><input type="color" id="edit-text-color" value="#111111"></div>
+        <div class="form-group"><label data-i18n="Size">Size</label><input type="number" id="edit-text-size" min="6" max="96" value="18" style="width:80px"></div>
+        <div class="form-group"><label data-i18n="Colour">Colour</label><input type="color" id="edit-text-color" value="#111111"></div>
         <div class="form-group"><label>&nbsp;</label>
           <div style="display:flex;gap:6px">
-            <button class="btn btn-primary btn-sm" onclick="editCommitText()" id="edit-text-add">Add text</button>
-            <button class="btn btn-ghost btn-sm" onclick="editCancelText()">Cancel</button>
+            <button class="btn btn-primary btn-sm" onclick="editCommitText()" id="edit-text-add" data-i18n="Add text">Add text</button>
+            <button class="btn btn-ghost btn-sm" onclick="editCancelText()" data-i18n="Cancel">Cancel</button>
           </div>
         </div>
       </div>
-      <p class="editor-hint">Standard PDF fonts only: Latin characters. Non-Latin text is not supported.</p>
+      <p class="editor-hint" data-i18n="Standard PDF fonts only: Latin characters. Non-Latin text is not supported.">Standard PDF fonts only: Latin characters. Non-Latin text is not supported.</p>
     </div>
 
     <div class="editor-panel" id="edit-pages-panel" style="display:none">
-      <h3>Pages</h3>
+      <h3 data-i18n="Pages">Pages</h3>
       <div class="editor-actions">
-        <button onclick="editRotatePage()">↻ Rotate 90°</button>
-        <button onclick="editDuplicatePage()">⧉ Duplicate</button>
-        <button onclick="editInsertPage()">＋ Insert blank after</button>
-        <button onclick="editDeletePage()">🗑 Delete page</button>
-        <button onclick="editMovePage(-1)">↑ Move up</button>
-        <button onclick="editMovePage(1)">↓ Move down</button>
+        <button onclick="editRotatePage()" data-i18n="↻ Rotate 90°">↻ Rotate 90°</button>
+        <button onclick="editDuplicatePage()" data-i18n="⧉ Duplicate">⧉ Duplicate</button>
+        <button onclick="editInsertPage()" data-i18n="＋ Insert blank after">＋ Insert blank after</button>
+        <button onclick="editDeletePage()" data-i18n="🗑 Delete page">🗑 Delete page</button>
+        <button onclick="editMovePage(-1)" data-i18n="↑ Move up">↑ Move up</button>
+        <button onclick="editMovePage(1)" data-i18n="↓ Move down">↓ Move down</button>
       </div>
-      <p class="editor-hint">Page changes apply to the working copy. Existing objects keep their on-screen position when a page is rotated. Undo covers object edits, not page operations.</p>
+      <p class="editor-hint" data-i18n="Page changes apply to the working copy. Existing objects keep their on-screen position when a page is rotated. Undo covers object edits, not page operations.">Page changes apply to the working copy. Existing objects keep their on-screen position when a page is rotated. Undo covers object edits, not page operations.</p>
     </div>
 
     <div class="editor-panel" id="edit-meta-panel" style="display:none">
-      <h3>Document metadata</h3>
+      <h3 data-i18n="Document metadata">Document metadata</h3>
       <div class="form-row">
-        <div class="form-group" style="flex:1"><label>Title</label><input type="text" id="edit-meta-title" maxlength="200"></div>
-        <div class="form-group" style="flex:1"><label>Author</label><input type="text" id="edit-meta-author" maxlength="200"></div>
+        <div class="form-group" style="flex:1"><label data-i18n="Title">Title</label><input type="text" id="edit-meta-title" maxlength="200"></div>
+        <div class="form-group" style="flex:1"><label data-i18n="Author">Author</label><input type="text" id="edit-meta-author" maxlength="200"></div>
       </div>
       <div class="form-row">
-        <div class="form-group" style="flex:1"><label>Subject</label><input type="text" id="edit-meta-subject" maxlength="200"></div>
-        <div class="form-group" style="flex:1"><label>Keywords (comma separated)</label><input type="text" id="edit-meta-keywords" maxlength="300"></div>
+        <div class="form-group" style="flex:1"><label data-i18n="Subject">Subject</label><input type="text" id="edit-meta-subject" maxlength="200"></div>
+        <div class="form-group" style="flex:1"><label data-i18n="Keywords (comma separated)">Keywords (comma separated)</label><input type="text" id="edit-meta-keywords" maxlength="300"></div>
       </div>
-      <p class="editor-hint">Saved when you press Save &amp; Download.</p>
+      <p class="editor-hint" data-i18n="Saved when you press Save &amp; Download.">Saved when you press Save &amp; Download.</p>
     </div>
 
     <input type="file" id="fi-edit-image" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="editAddImage(this.files[0])">
@@ -534,28 +539,35 @@
 <!-- signature pad -->
 <div class="modal-backdrop" id="sign-modal" style="display:none" onclick="if(event.target===this)closeSignPad()">
   <div class="modal">
-    <h3>✍️ Draw your signature</h3>
+    <h3 data-i18n="✍️ Draw your signature">✍️ Draw your signature</h3>
     <canvas id="sign-canvas" width="640" height="220"></canvas>
     <div class="sign-controls">
-      <label>Pen <input type="range" id="sign-pen" min="1" max="8" value="3"></label>
-      <button onclick="signUndo()">↶ Undo</button>
-      <button onclick="signClear()">Clear</button>
-      <button onclick="closeSignPad()">Cancel</button>
-      <button class="btn btn-primary btn-sm" onclick="signApply()">Use signature</button>
+      <label><span data-i18n="Pen">Pen</span> <input type="range" id="sign-pen" min="1" max="8" value="3"></label>
+      <button onclick="signUndo()" data-i18n="↶ Undo">↶ Undo</button>
+      <button onclick="signClear()" data-i18n="Clear">Clear</button>
+      <button onclick="closeSignPad()" data-i18n="Cancel">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="signApply()" data-i18n="Use signature">Use signature</button>
     </div>
-    <p class="editor-hint">Use a mouse, trackpad, stylus or finger. The signature is cropped and placed as a transparent PNG on the current page.</p>
+    <p class="editor-hint" data-i18n="Use a mouse, trackpad, stylus or finger. The signature is cropped and placed as a transparent PNG on the current page.">Use a mouse, trackpad, stylus or finger. The signature is cropped and placed as a transparent PNG on the current page.</p>
   </div>
 </div>
 
 <!-- FOOTER -->
 <footer>
-  <strong>RxPDF Cool</strong> — all processing happens in your browser. Your files never leave your device.<br>
-  <span>Built with pdf.js &amp; @cantoo/pdf-lib · MIT licensed · free forever</span>
+  <strong>RxPDF Cool</strong> — <span data-i18n="all processing happens in your browser. Your files never leave your device.">all processing happens in your browser. Your files never leave your device.</span><br>
+  <span data-i18n="Built with pdf.js &amp; @cantoo/pdf-lib · MIT licensed · free forever">Built with pdf.js &amp; @cantoo/pdf-lib · MIT licensed · free forever</span>
+  <div class="footer-links">
+    <a href="https://rxdiag.my.id" target="_blank" rel="noopener noreferrer" title="rxdiag.my.id">rxdiag.my.id</a>
+    <span class="footer-dot">·</span>
+    <a href="https://teer.id/rxdiag" target="_blank" rel="noopener noreferrer">❤️ <span data-i18n="Support">Support</span></a>
+  </div>
 </footer>
 </div><!-- /#app -->
 
 <div id="toast-container"></div>
 
+<script src="js/i18n-data.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/core.js"></script>
 <script src="js/split.js"></script>
 <script src="js/merge.js"></script>
